@@ -638,7 +638,7 @@ Create `services/api/package.json`:
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "build": "tsc --noEmit",
-    "deploy:dev": "serverless deploy --stage dev --region eu-west-1"
+    "deploy:dev": "AWS_PROFILE=sutoor serverless deploy --stage dev --region eu-west-1"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.658.0",
@@ -1278,8 +1278,8 @@ Create `infra/package.json`:
     "typecheck": "true",
     "test": "true",
     "build": "true",
-    "deploy:infra": "serverless deploy --stage dev --region eu-west-1",
-    "deploy:dev": "serverless deploy --stage dev --region eu-west-1 && bash scripts/deploy-spas.sh dev"
+    "deploy:infra": "AWS_PROFILE=sutoor serverless deploy --stage dev --region eu-west-1",
+    "deploy:dev": "AWS_PROFILE=sutoor serverless deploy --stage dev --region eu-west-1 && bash scripts/deploy-spas.sh dev"
   },
   "devDependencies": { "serverless": "^3.39.0" }
 }
@@ -1368,6 +1368,7 @@ Create `infra/scripts/deploy-spas.sh`:
 #!/usr/bin/env bash
 set -euo pipefail
 STAGE="${1:-dev}"
+export AWS_PROFILE=sutoor
 
 pnpm --filter @tombola/web build
 BUCKET=$(aws cloudformation describe-stacks --stack-name tombola-hosting-${STAGE} \
@@ -1430,7 +1431,7 @@ Expected: `{"status":"ok","stage":"dev"}`
 
 - [ ] **Step 4: Confirm the DynamoDB table + 3 GSIs exist (exit criterion 4)**
 
-Run: `aws dynamodb describe-table --table-name tombola-api-dev --region eu-west-1 --query "Table.GlobalSecondaryIndexes[].IndexName"`
+Run: `aws dynamodb describe-table --table-name tombola-api-dev --region eu-west-1 --profile sutoor --query "Table.GlobalSecondaryIndexes[].IndexName"`
 Expected: `["GSI1","GSI2","GSI3"]`
 
 - [ ] **Step 5: Confirm the hosted SPA RTL switch (exit criterion 3)**
