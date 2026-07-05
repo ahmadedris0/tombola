@@ -16,7 +16,9 @@ plan → build cycle. This roadmap does not restate the BRD; it references it.
 | Topic | Decision | Notes |
 |---|---|---|
 | First build target | **Full cloud build from day one** | Real AWS + WhatsApp Business provisioned; provisioning is on the critical path. |
-| IaC | **Serverless Framework** | Per BRD recommendation. |
+| IaC | **Serverless Framework v3** | Per BRD recommendation; v3 pinned (stable/free, avoids v4 licensing). |
+| AWS region | **eu-west-1 (Ireland)** | Primary deploy target. |
+| Repo/CI | **Local only for now** | pnpm monorepo; no remote/CI yet — local scripts + `serverless deploy`. Add CI later. |
 | Repo shape | **pnpm monorepo** | Public SPA + admin SPA + one Serverless service + shared package. |
 | Auth | **Cognito, phone-as-username + password** | OTP via **Custom SMS Sender Lambda → WhatsApp Cloud API**. **Never SNS** (production use rejected; Cognito native SMS bypassed). |
 | Public name display (R-9) | **First name + last initial** (e.g. "Ahmad E.") publicly | Full name visible to admins only. |
@@ -73,9 +75,10 @@ Sequenced vertical slices. M0→M3 are the backbone. M1's external WhatsApp temp
 is submitted **on day one** and runs in parallel so it never blocks.
 
 - **M0 — Foundation.** Monorepo scaffold, Serverless service skeleton, DynamoDB single-table
-  design + GSIs, shared types/Zod, i18n scaffolding (react-i18next + RTL), CI, deploy to a
-  dev AWS stage, CloudFront/S3 SPA hosting.
-  *Exit: empty-but-deployed skeleton with a health endpoint, green in AWS dev stage and CI.*
+  design + GSIs, shared types/Zod, i18n scaffolding (react-i18next + RTL), local deploy to a
+  dev AWS stage (eu-west-1), CloudFront/S3 SPA hosting. See
+  [`2026-07-05-m0-foundation-design.md`](2026-07-05-m0-foundation-design.md).
+  *Exit: empty-but-deployed skeleton with a health endpoint, local checks + AWS dev stage green.*
 - **M1 — Auth.** Cognito phone-as-username, Custom SMS Sender Lambda → WhatsApp OTP,
   register/login/reset, resend cap (max 3 / 30 min with countdown), profile + language pref.
   *Exit: a real user signs up via WhatsApp OTP and logs in.*
