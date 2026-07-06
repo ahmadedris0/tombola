@@ -24,4 +24,11 @@ describe('canTransitionTombola', () => {
   it('exposes the transition map', () => {
     expect(tombolaTransitions[TombolaStatus.Active]).toContain(TombolaStatus.Closed);
   });
+  it('allows cancel from draft and closed (all pre-finished states)', () => {
+    expect(canTransitionTombola(TombolaStatus.Draft, TombolaStatus.Cancelled)).toBe(true);
+    expect(canTransitionTombola(TombolaStatus.Closed, TombolaStatus.Cancelled)).toBe(true);
+  });
+  it('returns false for an unrecognized source state instead of throwing', () => {
+    expect(canTransitionTombola('bogus' as TombolaStatus, TombolaStatus.Active)).toBe(false);
+  });
 });

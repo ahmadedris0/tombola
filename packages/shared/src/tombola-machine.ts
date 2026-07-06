@@ -1,6 +1,6 @@
 import { TombolaStatus } from './enums';
 
-export const tombolaTransitions: Record<TombolaStatus, TombolaStatus[]> = {
+export const tombolaTransitions: Readonly<Record<TombolaStatus, readonly TombolaStatus[]>> = {
   [TombolaStatus.Draft]: [TombolaStatus.Upcoming, TombolaStatus.Cancelled],
   [TombolaStatus.Upcoming]: [TombolaStatus.Active, TombolaStatus.Cancelled],
   [TombolaStatus.Active]: [TombolaStatus.Closed, TombolaStatus.Cancelled],
@@ -10,5 +10,5 @@ export const tombolaTransitions: Record<TombolaStatus, TombolaStatus[]> = {
 };
 
 export function canTransitionTombola(from: TombolaStatus, to: TombolaStatus): boolean {
-  return tombolaTransitions[from].includes(to);
+  return tombolaTransitions[from]?.includes(to) ?? false;
 }

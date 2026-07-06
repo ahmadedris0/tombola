@@ -21,4 +21,10 @@ describe('canTransitionNumber', () => {
   it('exposes the transition map', () => {
     expect(numberTransitions[NumberState.Reserved]).toContain(NumberState.Confirmed);
   });
+  it('rejects reverse transition confirmed -> reserved', () => {
+    expect(canTransitionNumber(NumberState.Confirmed, NumberState.Reserved)).toBe(false);
+  });
+  it('returns false for an unrecognized source state instead of throwing', () => {
+    expect(canTransitionNumber('bogus' as NumberState, NumberState.Available)).toBe(false);
+  });
 });
