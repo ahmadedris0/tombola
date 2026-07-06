@@ -6,8 +6,11 @@ import ar from './ar.json';
 const STORAGE_KEY = 'tombola.locale';
 
 export function currentLocale(): 'en' | 'ar' {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  return stored === 'ar' ? 'ar' : 'en';
+  try {
+    return localStorage.getItem(STORAGE_KEY) === 'ar' ? 'ar' : 'en';
+  } catch {
+    return 'en';
+  }
 }
 
 export function applyDir(locale: 'en' | 'ar') {
@@ -16,9 +19,13 @@ export function applyDir(locale: 'en' | 'ar') {
 }
 
 export function setLocale(locale: 'en' | 'ar') {
-  localStorage.setItem(STORAGE_KEY, locale);
+  try {
+    localStorage.setItem(STORAGE_KEY, locale);
+  } catch {
+    // ignore storage failures (private mode, locked-down webviews)
+  }
   applyDir(locale);
-  void i18n.changeLanguage(locale);
+  void i18n.changeLanguage(locale).catch(() => {});
 }
 
 void i18n.use(initReactI18next).init({

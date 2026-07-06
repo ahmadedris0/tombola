@@ -2,9 +2,9 @@ import { useTranslation } from 'react-i18next';
 import { setLocale } from '../i18n/index';
 
 export function LanguageSwitcher() {
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const next = i18n.language === 'ar' ? 'en' : 'ar';
-  const label = next === 'ar' ? 'العربية' : 'English';
+  const label = next === 'ar' ? t('lang.switchToArabic') : t('lang.switchToEnglish');
   return (
     <button
       type="button"
