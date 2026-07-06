@@ -2,6 +2,7 @@
 set -euo pipefail
 STAGE="${1:-dev}"
 export AWS_PROFILE=sutoor
+cd "$(git rev-parse --show-toplevel)"
 
 pnpm --filter @tombola/web build
 BUCKET=$(aws cloudformation describe-stacks --stack-name tombola-hosting-${STAGE} \
