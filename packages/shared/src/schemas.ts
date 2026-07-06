@@ -1,25 +1,23 @@
 import { z } from 'zod';
+import { TombolaStatus, NumberState, PaymentStatus, Role, Locale } from './enums';
 
-export const localeSchema = z.enum(['en', 'ar']);
+const enumValues = <T extends string>(obj: Record<string, T>): [T, ...T[]] =>
+  Object.values(obj) as [T, ...T[]];
+
+export const localeSchema = z.enum(enumValues(Locale));
 export const localizedTextSchema = z.object({ en: z.string(), ar: z.string() });
 
-export const tombolaStatusSchema = z.enum([
-  'draft',
-  'upcoming',
-  'active',
-  'closed',
-  'finished',
-  'cancelled',
-]);
-export const numberStateSchema = z.enum(['available', 'reserved', 'confirmed']);
-export const paymentStatusSchema = z.enum(['pending', 'confirmed', 'rejected']);
+export const tombolaStatusSchema = z.enum(enumValues(TombolaStatus));
+export const numberStateSchema = z.enum(enumValues(NumberState));
+export const paymentStatusSchema = z.enum(enumValues(PaymentStatus));
+export const roleSchema = z.enum(enumValues(Role));
 
 export const userSchema = z.object({
   userId: z.string(),
   fullName: z.string().min(1),
   phoneE164: z.string().regex(/^\+[1-9]\d{1,14}$/),
   locale: localeSchema,
-  role: z.enum(['user', 'admin']),
+  role: roleSchema,
   status: z.enum(['active', 'disabled']),
   phoneVerified: z.boolean(),
   createdAt: z.string().datetime(),
