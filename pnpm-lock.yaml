@@ -137,6 +137,12 @@ importers:
         specifier: ^2.1.1
         version: 2.1.9(@types/node@20.19.43)(jsdom@25.0.1)
 
+  infra:
+    devDependencies:
+      serverless:
+        specifier: ^3.39.0
+        version: 3.40.0(@types/node@20.19.43)
+
   packages/shared:
     dependencies:
       zod:

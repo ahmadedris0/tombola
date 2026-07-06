@@ -1,0 +1,66 @@
+service: tombola-hosting
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  region: ${opt:region, 'eu-west-1'}
+  stage: ${opt:stage, 'dev'}
+
+resources:
+  Resources:
+    WebBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: tombola-web-${self:provider.stage}
+    AdminBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: tombola-admin-${self:provider.stage}
+    WebOAC:
+      Type: AWS::CloudFront::OriginAccessControl
+      Properties:
+        OriginAccessControlConfig:
+          Name: tombola-web-oac-${self:provider.stage}
+          OriginAccessControlOriginType: s3
+          SigningBehavior: always
+          SigningProtocol: sigv4
+    WebDistribution:
+      Type: AWS::CloudFront::Distribution
+      Properties:
+        DistributionConfig:
+          Enabled: true
+          DefaultRootObject: index.html
+          Origins:
+            - Id: web-s3
+              DomainName: !GetAtt WebBucket.RegionalDomainName
+              OriginAccessControlId: !GetAtt WebOAC.Id
+              S3OriginConfig: { OriginAccessIdentity: '' }
+          DefaultCacheBehavior:
+            TargetOriginId: web-s3
+            ViewerProtocolPolicy: redirect-to-https
+            CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+          CustomErrorResponses:
+            - ErrorCode: 403
+              ResponseCode: 200
+              ResponsePagePath: /index.html
+            - ErrorCode: 404
+              ResponseCode: 200
+              ResponsePagePath: /index.html
+    WebBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref WebBucket
+        PolicyDocument:
+          Statement:
+            - Effect: Allow
+              Principal: { Service: cloudfront.amazonaws.com }
+              Action: s3:GetObject
+              Resource: !Sub '${WebBucket.Arn}/*'
+              Condition:
+                StringEquals:
+                  AWS:SourceArn: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${WebDistribution}'
+  Outputs:
+    WebBucketName: { Value: !Ref WebBucket }
+    AdminBucketName: { Value: !Ref AdminBucket }
+    WebDistributionId: { Value: !Ref WebDistribution }
+    WebDistributionDomain: { Value: !GetAtt WebDistribution.DomainName }
