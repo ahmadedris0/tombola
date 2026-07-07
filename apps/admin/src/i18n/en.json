@@ -1,4 +1,17 @@
 {
   "app": { "title": "Tombola Admin", "tagline": "Operator console" },
-  "lang": { "switchToArabic": "العربية", "switchToEnglish": "English" }
+  "lang": { "switchToArabic": "العربية", "switchToEnglish": "English" },
+  "auth": {
+    "login": "Admin log in",
+    "logout": "Log out",
+    "phone": "Phone number",
+    "password": "Password",
+    "notAdmin": "This account is not an administrator.",
+    "error": {
+      "generic": "Something went wrong. Please try again.",
+      "notAuthorized": "Incorrect phone or password.",
+      "userNotConfirmed": "Please verify your phone first.",
+      "userNotFound": "No account found for this phone."
+    }
+  }
 }
