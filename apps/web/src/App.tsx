@@ -1,15 +1,29 @@
+import { Routes, Route, Navigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
+import { Register } from './pages/Register';
+import { VerifyOtp } from './pages/VerifyOtp';
+import { Login } from './pages/Login';
+import { ForgotPassword } from './pages/ForgotPassword';
+import { Profile } from './pages/Profile';
+import { RequireAuth } from './auth/RequireAuth';
 
 export default function App() {
   const { t } = useTranslation();
   return (
-    <main className="min-h-screen p-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t('app.title')}</h1>
+    <div className="min-h-screen">
+      <header className="flex items-center justify-between border-b p-4">
+        <Link to="/" className="text-lg font-bold">{t('app.title')}</Link>
         <LanguageSwitcher />
-      </div>
-      <p className="mt-2 text-gray-600">{t('app.tagline')}</p>
-    </main>
+      </header>
+      <Routes>
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/verify" element={<VerifyOtp />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/forgot" element={<ForgotPassword />} />
+        <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+      </Routes>
+    </div>
   );
 }

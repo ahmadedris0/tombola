@@ -1,4 +1,37 @@
 {
   "app": { "title": "Tombola", "tagline": "Reserve your number" },
-  "lang": { "switchToArabic": "العربية", "switchToEnglish": "English" }
+  "lang": { "switchToArabic": "العربية", "switchToEnglish": "English" },
+  "auth": {
+    "register": "Register",
+    "login": "Log in",
+    "logout": "Log out",
+    "fullName": "Full name",
+    "phone": "Phone number",
+    "password": "Password",
+    "newPassword": "New password",
+    "code": "Verification code",
+    "verify": "Verify",
+    "resend": "Resend code",
+    "resendIn": "Resend in {{seconds}}s",
+    "forgotPassword": "Forgot password?",
+    "reset": "Reset password",
+    "profile": "Profile",
+    "save": "Save",
+    "saved": "Saved",
+    "language": "Language",
+    "haveAccount": "Already have an account? Log in",
+    "needAccount": "Need an account? Register",
+    "error": {
+      "generic": "Something went wrong. Please try again.",
+      "usernameExists": "An account with this phone already exists.",
+      "codeMismatch": "That code is incorrect.",
+      "expiredCode": "That code has expired. Request a new one.",
+      "limitExceeded": "Too many attempts. Please try again later.",
+      "notAuthorized": "Incorrect phone or password.",
+      "userNotConfirmed": "Please verify your phone first.",
+      "invalidPassword": "Password does not meet requirements.",
+      "invalidParameter": "Please check your details.",
+      "userNotFound": "No account found for this phone."
+    }
+  }
 }

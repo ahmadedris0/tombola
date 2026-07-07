@@ -1,4 +1,37 @@
 {
   "app": { "title": "تومبولا", "tagline": "احجز رقمك" },
-  "lang": { "switchToArabic": "العربية", "switchToEnglish": "English" }
+  "lang": { "switchToArabic": "العربية", "switchToEnglish": "English" },
+  "auth": {
+    "register": "إنشاء حساب",
+    "login": "تسجيل الدخول",
+    "logout": "تسجيل الخروج",
+    "fullName": "الاسم الكامل",
+    "phone": "رقم الهاتف",
+    "password": "كلمة المرور",
+    "newPassword": "كلمة مرور جديدة",
+    "code": "رمز التحقق",
+    "verify": "تحقق",
+    "resend": "إعادة إرسال الرمز",
+    "resendIn": "إعادة الإرسال خلال {{seconds}} ثانية",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "reset": "إعادة تعيين كلمة المرور",
+    "profile": "الملف الشخصي",
+    "save": "حفظ",
+    "saved": "تم الحفظ",
+    "language": "اللغة",
+    "haveAccount": "لديك حساب؟ سجّل الدخول",
+    "needAccount": "تحتاج حساب؟ أنشئ حساباً",
+    "error": {
+      "generic": "حدث خطأ ما. حاول مرة أخرى.",
+      "usernameExists": "يوجد حساب بهذا الرقم بالفعل.",
+      "codeMismatch": "الرمز غير صحيح.",
+      "expiredCode": "انتهت صلاحية الرمز. اطلب رمزاً جديداً.",
+      "limitExceeded": "محاولات كثيرة جداً. حاول لاحقاً.",
+      "notAuthorized": "الرقم أو كلمة المرور غير صحيحة.",
+      "userNotConfirmed": "يرجى تأكيد رقمك أولاً.",
+      "invalidPassword": "كلمة المرور لا تحقق المتطلبات.",
+      "invalidParameter": "يرجى التحقق من بياناتك.",
+      "userNotFound": "لا يوجد حساب بهذا الرقم."
+    }
+  }
 }
