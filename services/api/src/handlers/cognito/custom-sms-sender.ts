@@ -15,7 +15,7 @@ interface CustomSmsEvent {
 }
 
 export const handler = async (event: CustomSmsEvent): Promise<CustomSmsEvent> => {
-  const phoneE164 = event.request.userAttributes.phone_number;
+  const phoneE164 = event.request.userAttributes.phone_number!;
   const locale = event.request.userAttributes.locale === 'ar' ? 'ar' : 'en';
 
   const count = await incrementResendCount(phoneE164, RESEND_WINDOW_SECONDS);
