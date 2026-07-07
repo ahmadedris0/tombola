@@ -11,6 +11,29 @@ provider:
   environment:
     STAGE: ${self:provider.stage}
     TABLE_NAME: ${self:service}-${self:provider.stage}
+    OTP_DELIVERY: ${env:OTP_DELIVERY, 'stub'}
+    WHATSAPP_SECRET_ID: !Ref WhatsAppSecret
+  httpApi:
+    cors:
+      allowedOrigins:
+        - https://d5udiniaf9iiw.cloudfront.net
+        - http://localhost:5173
+      allowedHeaders:
+        - Content-Type
+        - Authorization
+      allowedMethods:
+        - GET
+        - PUT
+        - POST
+        - OPTIONS
+    authorizers:
+      cognitoJwt:
+        type: jwt
+        identitySource: $request.header.Authorization
+        issuerUrl:
+          Fn::Sub: https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPool}
+        audience:
+          - !Ref UserPoolClient
   iam:
     role:
       statements:
@@ -24,6 +47,12 @@ provider:
           Resource:
             - !GetAtt TombolaTable.Arn
             - !Sub '${TombolaTable.Arn}/index/*'
+        - Effect: Allow
+          Action: [kms:Decrypt]
+          Resource: !GetAtt OtpKmsKey.Arn
+        - Effect: Allow
+          Action: secretsmanager:GetSecretValue
+          Resource: !Ref WhatsAppSecret
 
 plugins:
   - serverless-esbuild
@@ -43,6 +72,34 @@ functions:
     events:
       - httpApi:
           path: /health
+          method: get
+  customSmsSender:
+    handler: src/handlers/cognito/custom-sms-sender.handler
+  postConfirmation:
+    handler: src/handlers/cognito/post-confirmation.handler
+  preSignUp:
+    handler: src/handlers/cognito/pre-signup.handler
+  getMe:
+    handler: src/handlers/me.getMe
+    events:
+      - httpApi:
+          path: /me
+          method: get
+          authorizer:
+            name: cognitoJwt
+  updateMe:
+    handler: src/handlers/me.updateMe
+    events:
+      - httpApi:
+          path: /me
+          method: put
+          authorizer:
+            name: cognitoJwt
+  devOtp:
+    handler: src/handlers/dev-otp.handler
+    events:
+      - httpApi:
+          path: '/dev/otp/{phone}'
           method: get
 
 resources:
@@ -80,6 +137,113 @@ resources:
               - { AttributeName: GSI3PK, KeyType: HASH }
               - { AttributeName: GSI3SK, KeyType: RANGE }
             Projection: { ProjectionType: ALL }
+        TimeToLiveSpecification:
+          AttributeName: ttl
+          Enabled: true
+    OtpKmsKey:
+      Type: AWS::KMS::Key
+      Properties:
+        Description: Tombola Cognito custom SMS sender code encryption
+        KeyPolicy:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal: { AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root' }
+              Action: 'kms:*'
+              Resource: '*'
+            - Effect: Allow
+              Principal: { Service: cognito-idp.amazonaws.com }
+              Action: [kms:Encrypt, kms:Decrypt, kms:GenerateDataKey, kms:CreateGrant, kms:DescribeKey]
+              Resource: '*'
+    CognitoSnsRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal: { Service: cognito-idp.amazonaws.com }
+              Action: sts:AssumeRole
+              Condition:
+                StringEquals:
+                  sts:ExternalId: tombola-${self:provider.stage}-sms
+        Policies:
+          - PolicyName: sns-publish
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action: sns:Publish
+                  Resource: '*'
+    WhatsAppSecret:
+      Type: AWS::SecretsManager::Secret
+      Properties:
+        Name: tombola/whatsapp/${self:provider.stage}
+        SecretString: '{"phoneNumberId":"","accessToken":"","templateName":"tombola_otp"}'
+    UserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: tombola-${self:provider.stage}
+        UsernameAttributes: [phone_number]
+        AutoVerifiedAttributes: [phone_number]
+        SmsConfiguration:
+          SnsCallerArn: !GetAtt CognitoSnsRole.Arn
+          ExternalId: tombola-${self:provider.stage}-sms
+          SnsRegion: ${self:provider.region}
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 8
+            RequireLowercase: true
+            RequireNumbers: true
+            RequireUppercase: false
+            RequireSymbols: false
+        Schema:
+          - { Name: name, AttributeDataType: String, Mutable: true, Required: true }
+          - { Name: locale, AttributeDataType: String, Mutable: true, Required: false }
+        LambdaConfig:
+          CustomSMSSender:
+            LambdaArn: !GetAtt CustomSmsSenderLambdaFunction.Arn
+            LambdaVersion: V1_0
+          PreSignUp: !GetAtt PreSignUpLambdaFunction.Arn
+          PostConfirmation: !GetAtt PostConfirmationLambdaFunction.Arn
+          KMSKeyID: !GetAtt OtpKmsKey.Arn
+    UserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        UserPoolId: !Ref UserPool
+        ClientName: tombola-web-${self:provider.stage}
+        GenerateSecret: false
+        ExplicitAuthFlows: [ALLOW_USER_SRP_AUTH, ALLOW_REFRESH_TOKEN_AUTH]
+    AdminGroup:
+      Type: AWS::Cognito::UserPoolGroup
+      Properties:
+        GroupName: admin
+        UserPoolId: !Ref UserPool
+    CustomSmsSenderInvokePermission:
+      Type: AWS::Lambda::Permission
+      Properties:
+        Action: lambda:InvokeFunction
+        FunctionName: !Ref CustomSmsSenderLambdaFunction
+        Principal: cognito-idp.amazonaws.com
+        SourceArn: !GetAtt UserPool.Arn
+    PostConfirmationInvokePermission:
+      Type: AWS::Lambda::Permission
+      Properties:
+        Action: lambda:InvokeFunction
+        FunctionName: !Ref PostConfirmationLambdaFunction
+        Principal: cognito-idp.amazonaws.com
+        SourceArn: !GetAtt UserPool.Arn
+    PreSignUpInvokePermission:
+      Type: AWS::Lambda::Permission
+      Properties:
+        Action: lambda:InvokeFunction
+        FunctionName: !Ref PreSignUpLambdaFunction
+        Principal: cognito-idp.amazonaws.com
+        SourceArn: !GetAtt UserPool.Arn
   Outputs:
     ApiBaseUrl:
       Value: !GetAtt HttpApi.ApiEndpoint
+    UserPoolId:
+      Value: !Ref UserPool
+    UserPoolClientId:
+      Value: !Ref UserPoolClient
