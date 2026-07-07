@@ -1,0 +1,13 @@
+{
+  "name": "@tombola/infra",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "typecheck": "true",
+    "test": "true",
+    "build": "true",
+    "deploy:infra": "AWS_PROFILE=sutoor serverless deploy --stage dev --region eu-west-1",
+    "deploy:dev": "AWS_PROFILE=sutoor serverless deploy --stage dev --region eu-west-1 && bash scripts/deploy-spas.sh dev"
+  },
+  "devDependencies": { "serverless": "^3.39.0" }
+}
