@@ -16,4 +16,8 @@ describe('mapCognitoError', () => {
     expect(mapCognitoError('SomeBrandNewException')).toBe(AUTH_ERROR_FALLBACK_KEY);
     expect(mapCognitoError(undefined)).toBe(AUTH_ERROR_FALLBACK_KEY);
   });
+  it('does not match inherited Object.prototype keys', () => {
+    expect(mapCognitoError('constructor')).toBe(AUTH_ERROR_FALLBACK_KEY);
+    expect(mapCognitoError('toString')).toBe(AUTH_ERROR_FALLBACK_KEY);
+  });
 });

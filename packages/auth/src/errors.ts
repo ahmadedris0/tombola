@@ -14,6 +14,6 @@ const MAP: Record<string, string> = {
 };
 
 export function mapCognitoError(name: string | undefined): string {
-  if (name && name in MAP) return MAP[name]!;
+  if (name && Object.hasOwn(MAP, name)) return MAP[name]!;
   return AUTH_ERROR_FALLBACK_KEY;
 }
