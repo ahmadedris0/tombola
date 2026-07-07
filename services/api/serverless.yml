@@ -65,6 +65,10 @@ custom:
     format: esm
     platform: node
     outputFileExtension: .mjs
+    external:
+      - '@aws-sdk/*'
+    banner:
+      js: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);"
 
 functions:
   health:
