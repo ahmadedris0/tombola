@@ -11,7 +11,7 @@ describe('otp-store', () => {
   it('putStubOtp writes an OTP item with a ttl', async () => {
     mock.on(PutCommand).resolves({});
     await putStubOtp('+96170123456', '123456');
-    const item = mock.commandCalls(PutCommand)[0].args[0].input.Item as Record<string, unknown>;
+    const item = mock.commandCalls(PutCommand)[0]!.args[0].input.Item as Record<string, unknown>;
     expect(item.PK).toBe('OTP#+96170123456');
     expect(item.code).toBe('123456');
     expect(typeof item.ttl).toBe('number');

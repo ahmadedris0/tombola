@@ -17,7 +17,7 @@ describe('users repository', () => {
       locale: 'en',
       role: 'user',
     });
-    const call = mock.commandCalls(PutCommand)[0];
+    const call = mock.commandCalls(PutCommand)[0]!;
     expect(call.args[0].input.Item).toMatchObject({
       PK: 'USER#u1',
       SK: 'USER#u1',
