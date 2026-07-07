@@ -18,6 +18,12 @@ describe('normalizeToE164', () => {
   it('honors a supplied default country code', () => {
     expect(normalizeToE164('5551234', '+1')).toBe('+15551234');
   });
+  it('treats a leading 00 international prefix as +', () => {
+    expect(normalizeToE164('0096170123456')).toBe('+96170123456');
+  });
+  it('strips spaces from a 00-prefixed international number', () => {
+    expect(normalizeToE164('00 961 70 123 456')).toBe('+96170123456');
+  });
   it('throws on empty input', () => {
     expect(() => normalizeToE164('')).toThrow();
   });

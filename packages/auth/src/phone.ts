@@ -9,6 +9,7 @@ export function normalizeToE164(input: string, defaultCountryCode = DEFAULT_COUN
   const trimmed = input.replace(/[\s-]/g, '');
   if (!trimmed) throw new Error('phone number is empty');
   if (trimmed.startsWith('+')) return trimmed;
+  if (trimmed.startsWith('00')) return `+${trimmed.slice(2)}`;
   const local = trimmed.replace(/^0+/, '');
   return `${defaultCountryCode}${local}`;
 }
