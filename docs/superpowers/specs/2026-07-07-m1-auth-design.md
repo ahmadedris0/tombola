@@ -8,8 +8,23 @@
 
 M1 delivers authentication: phone+password registration/login with a WhatsApp-delivered OTP,
 password reset, a resend cap, and a profile page — fully bilingual (EN/AR, RTL). Auth is
-built on Amazon Cognito with a Custom SMS Sender Lambda that routes OTP codes through a
-pluggable delivery provider (stub in dev, WhatsApp once Meta approves the template).
+built on Amazon Cognito with OTP codes routed through a pluggable delivery provider (stub in
+dev, WhatsApp once Meta approves the template).
+
+## Implementation update — R-7 pivot (custom OTP store)
+
+The original design used Cognito's **CustomSMSSender** Lambda trigger (+ KMS) to deliver the
+OTP. In practice Cognito would not reliably invoke the custom sender (it silently fell back to
+SNS), so we adopted the BRD's documented **R-7 alternative: a custom OTP store**. Cognito
+remains the identity/password/JWT provider, but OTP generation, storage (DynamoDB with TTL),
+verification, and delivery are handled by our own API endpoints
+(`/auth/register|verify|resend|forgot|reset`), which call Cognito **admin** APIs
+(`SignUp`, `AdminConfirmSignUp`, `AdminSetUserPassword`, …) after our own OTP check. This
+removes the CustomSMSSender trigger, KMS key, and `AutoVerifiedAttributes` (and with them the
+pool↔Lambda circular-dependency constraint). The `DeliveryProvider` abstraction, resend cap,
+phone normalization, error mapping, and all UI are unchanged; only *where* the OTP lifecycle
+lives moved from Cognito into our API. The frontend `AuthClient`'s signUp/confirm/resend/
+forgot/reset call our API; login/session stay on the Cognito SDK.
 
 ---
 
