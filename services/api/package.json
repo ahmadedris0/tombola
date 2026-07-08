@@ -10,12 +10,12 @@
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.658.0",
-    "@aws-sdk/client-kms": "^3.658.0",
     "@aws-sdk/client-secrets-manager": "^3.658.0",
     "@aws-sdk/lib-dynamodb": "^3.658.0",
     "@tombola/auth": "workspace:*",
     "@tombola/shared": "workspace:*",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "@aws-sdk/client-cognito-identity-provider": "^3.658.0"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.145",

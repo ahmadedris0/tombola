@@ -186,12 +186,12 @@ importers:
 
   services/api:
     dependencies:
+      '@aws-sdk/client-cognito-identity-provider':
+        specifier: ^3.658.0
+        version: 3.1079.0
       '@aws-sdk/client-dynamodb':
         specifier: ^3.658.0
         version: 3.1079.0
-      '@aws-sdk/client-kms':
-        specifier: ^3.658.0
-        version: 3.1080.0
       '@aws-sdk/client-secrets-manager':
         specifier: ^3.658.0
         version: 3.1080.0
@@ -280,10 +280,6 @@ packages:
 
   '@aws-sdk/client-iam@3.1079.0':
     resolution: {integrity: sha512-BKM1GzF00yeIchUvXbcM3bw72F1JFCgum7s7e95bM+WGeOflpkx1e19OUzABbZnTdmjBf1o7IZ84+qmwoQI8Aw==}
-    engines: {node: '>=20.0.0'}
-
-  '@aws-sdk/client-kms@3.1080.0':
-    resolution: {integrity: sha512-gGrS4qu65cDgFdVGLkutHcv7SFD+zmANN4vdjpUkz9fSJV8LJ0FHVIJRSkulr87peq3IuuNvAr744h25nJEbfA==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/client-lambda@3.1079.0':
@@ -4433,8 +4429,8 @@ snapshots:
 
   '@aws-sdk/client-cognito-identity-provider@3.1079.0':
     dependencies:
-      '@aws-sdk/core': 3.974.27
-      '@aws-sdk/credential-provider-node': 3.972.62
+      '@aws-sdk/core': 3.974.28
+      '@aws-sdk/credential-provider-node': 3.972.63
       '@aws-sdk/types': 3.973.15
       '@smithy/core': 3.29.1
       '@smithy/fetch-http-handler': 5.6.3
@@ -4471,17 +4467,6 @@ snapshots:
     dependencies:
       '@aws-sdk/core': 3.974.27
       '@aws-sdk/credential-provider-node': 3.972.62
-      '@aws-sdk/types': 3.973.15
-      '@smithy/core': 3.29.1
-      '@smithy/fetch-http-handler': 5.6.3
-      '@smithy/node-http-handler': 4.9.3
-      '@smithy/types': 4.15.1
-      tslib: 2.8.1
-
-  '@aws-sdk/client-kms@3.1080.0':
-    dependencies:
-      '@aws-sdk/core': 3.974.28
-      '@aws-sdk/credential-provider-node': 3.972.63
       '@aws-sdk/types': 3.973.15
       '@smithy/core': 3.29.1
       '@smithy/fetch-http-handler': 5.6.3

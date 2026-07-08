@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const { getMock } = vi.hoisted(() => ({ getMock: vi.fn() }));
-vi.mock('../repository/otp-store', () => ({ getStubOtp: getMock }));
+vi.mock('../repository/otp-store', () => ({ getOtp: getMock }));
 
 import { handler } from './dev-otp';
 

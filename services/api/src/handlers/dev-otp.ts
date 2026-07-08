@@ -1,5 +1,5 @@
 import type { APIGatewayProxyStructuredResultV2 } from 'aws-lambda';
-import { getStubOtp } from '../repository/otp-store';
+import { getOtp } from '../repository/otp-store';
 
 type Event = { pathParameters?: { phone?: string } };
 
@@ -8,7 +8,7 @@ export const handler = async (event: Event): Promise<APIGatewayProxyStructuredRe
     return { statusCode: 404, body: JSON.stringify({ error: 'disabled' }) };
   }
   const phone = decodeURIComponent(event.pathParameters?.phone ?? '');
-  const code = await getStubOtp(phone);
+  const code = await getOtp(phone, 'signup');
   if (!code) return { statusCode: 404, body: JSON.stringify({ error: 'not_found' }) };
   return {
     statusCode: 200,

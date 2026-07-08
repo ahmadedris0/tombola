@@ -1,31 +1,37 @@
-import { PutCommand, GetCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import { PutCommand, GetCommand, DeleteCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { ddb, TABLE_NAME } from '../lib/dynamo';
 
-const STUB_TTL_SECONDS = 600;
+export type OtpPurpose = 'signup' | 'reset';
+const OTP_TTL_SECONDS = 600;
 
 function nowEpoch(): number {
   return Math.floor(Date.now() / 1000);
 }
 
-export async function putStubOtp(phoneE164: string, code: string): Promise<void> {
+function key(phoneE164: string, purpose: OtpPurpose) {
+  return { PK: `OTP#${phoneE164}#${purpose}`, SK: 'OTP' };
+}
+
+export async function putOtp(phoneE164: string, purpose: OtpPurpose, code: string): Promise<void> {
   await ddb.send(
     new PutCommand({
       TableName: TABLE_NAME,
-      Item: {
-        PK: `OTP#${phoneE164}`,
-        SK: 'OTP',
-        code,
-        ttl: nowEpoch() + STUB_TTL_SECONDS,
-      },
+      Item: { ...key(phoneE164, purpose), code, ttl: nowEpoch() + OTP_TTL_SECONDS },
     }),
   );
 }
 
-export async function getStubOtp(phoneE164: string): Promise<string | null> {
-  const res = await ddb.send(
-    new GetCommand({ TableName: TABLE_NAME, Key: { PK: `OTP#${phoneE164}`, SK: 'OTP' } }),
-  );
-  return (res.Item?.code as string | undefined) ?? null;
+export async function getOtp(phoneE164: string, purpose: OtpPurpose): Promise<string | null> {
+  const res = await ddb.send(new GetCommand({ TableName: TABLE_NAME, Key: key(phoneE164, purpose) }));
+  const item = res.Item;
+  if (!item) return null;
+  // DynamoDB TTL deletion is lazy (up to 48h), so verify freshness explicitly.
+  if (typeof item.ttl === 'number' && item.ttl < nowEpoch()) return null;
+  return (item.code as string | undefined) ?? null;
+}
+
+export async function deleteOtp(phoneE164: string, purpose: OtpPurpose): Promise<void> {
+  await ddb.send(new DeleteCommand({ TableName: TABLE_NAME, Key: key(phoneE164, purpose) }));
 }
 
 /** Atomically increments the resend counter for a phone; returns the new count. */

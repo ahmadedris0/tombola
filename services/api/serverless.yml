@@ -13,6 +13,8 @@ provider:
     TABLE_NAME: ${self:service}-${self:provider.stage}
     OTP_DELIVERY: ${env:OTP_DELIVERY, 'stub'}
     WHATSAPP_SECRET_ID: !Ref WhatsAppSecret
+    USER_POOL_ID: !Ref UserPool
+    USER_POOL_CLIENT_ID: !Ref UserPoolClient
   httpApi:
     cors:
       allowedOrigins:
@@ -48,11 +50,16 @@ provider:
             - !GetAtt TombolaTable.Arn
             - !Sub '${TombolaTable.Arn}/index/*'
         - Effect: Allow
-          Action: [kms:Decrypt]
-          Resource: !GetAtt OtpKmsKey.Arn
-        - Effect: Allow
           Action: secretsmanager:GetSecretValue
           Resource: !Ref WhatsAppSecret
+        - Effect: Allow
+          Action:
+            - cognito-idp:SignUp
+            - cognito-idp:AdminConfirmSignUp
+            - cognito-idp:AdminUpdateUserAttributes
+            - cognito-idp:AdminGetUser
+            - cognito-idp:AdminSetUserPassword
+          Resource: !GetAtt UserPool.Arn
 
 plugins:
   - serverless-esbuild
@@ -75,12 +82,36 @@ functions:
       - httpApi:
           path: /health
           method: get
-  customSmsSender:
-    handler: src/handlers/cognito/custom-sms-sender.handler
-  postConfirmation:
-    handler: src/handlers/cognito/post-confirmation.handler
-  preSignUp:
-    handler: src/handlers/cognito/pre-signup.handler
+  register:
+    handler: src/handlers/auth.register
+    events:
+      - httpApi:
+          path: /auth/register
+          method: post
+  verify:
+    handler: src/handlers/auth.verify
+    events:
+      - httpApi:
+          path: /auth/verify
+          method: post
+  resend:
+    handler: src/handlers/auth.resend
+    events:
+      - httpApi:
+          path: /auth/resend
+          method: post
+  forgot:
+    handler: src/handlers/auth.forgot
+    events:
+      - httpApi:
+          path: /auth/forgot
+          method: post
+  reset:
+    handler: src/handlers/auth.reset
+    events:
+      - httpApi:
+          path: /auth/reset
+          method: post
   getMe:
     handler: src/handlers/me.getMe
     events:
@@ -142,41 +173,6 @@ resources:
         TimeToLiveSpecification:
           AttributeName: ttl
           Enabled: true
-    OtpKmsKey:
-      Type: AWS::KMS::Key
-      Properties:
-        Description: Tombola Cognito custom SMS sender code encryption
-        KeyPolicy:
-          Version: '2012-10-17'
-          Statement:
-            - Effect: Allow
-              Principal: { AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root' }
-              Action: 'kms:*'
-              Resource: '*'
-            - Effect: Allow
-              Principal: { Service: cognito-idp.amazonaws.com }
-              Action: [kms:Encrypt, kms:Decrypt, kms:GenerateDataKey, kms:CreateGrant, kms:DescribeKey]
-              Resource: '*'
-    CognitoSnsRole:
-      Type: AWS::IAM::Role
-      Properties:
-        AssumeRolePolicyDocument:
-          Version: '2012-10-17'
-          Statement:
-            - Effect: Allow
-              Principal: { Service: cognito-idp.amazonaws.com }
-              Action: sts:AssumeRole
-              Condition:
-                StringEquals:
-                  sts:ExternalId: tombola-${self:provider.stage}-sms
-        Policies:
-          - PolicyName: sns-publish
-            PolicyDocument:
-              Version: '2012-10-17'
-              Statement:
-                - Effect: Allow
-                  Action: sns:Publish
-                  Resource: '*'
     WhatsAppSecret:
       Type: AWS::SecretsManager::Secret
       Properties:
@@ -187,11 +183,6 @@ resources:
       Properties:
         UserPoolName: tombola-${self:provider.stage}
         UsernameAttributes: [phone_number]
-        AutoVerifiedAttributes: [phone_number]
-        SmsConfiguration:
-          SnsCallerArn: !GetAtt CognitoSnsRole.Arn
-          ExternalId: tombola-${self:provider.stage}-sms
-          SnsRegion: ${self:provider.region}
         Policies:
           PasswordPolicy:
             MinimumLength: 8
@@ -202,13 +193,6 @@ resources:
         Schema:
           - { Name: name, AttributeDataType: String, Mutable: true, Required: true }
           - { Name: locale, AttributeDataType: String, Mutable: true, Required: false }
-        LambdaConfig:
-          CustomSMSSender:
-            LambdaArn: !GetAtt CustomSmsSenderLambdaFunction.Arn
-            LambdaVersion: V1_0
-          PreSignUp: !GetAtt PreSignUpLambdaFunction.Arn
-          PostConfirmation: !GetAtt PostConfirmationLambdaFunction.Arn
-          KMSKeyID: !GetAtt OtpKmsKey.Arn
     UserPoolClient:
       Type: AWS::Cognito::UserPoolClient
       Properties:
@@ -221,27 +205,6 @@ resources:
       Properties:
         GroupName: admin
         UserPoolId: !Ref UserPool
-    CustomSmsSenderInvokePermission:
-      Type: AWS::Lambda::Permission
-      Properties:
-        Action: lambda:InvokeFunction
-        FunctionName: !Ref CustomSmsSenderLambdaFunction
-        Principal: cognito-idp.amazonaws.com
-        SourceArn: !GetAtt UserPool.Arn
-    PostConfirmationInvokePermission:
-      Type: AWS::Lambda::Permission
-      Properties:
-        Action: lambda:InvokeFunction
-        FunctionName: !Ref PostConfirmationLambdaFunction
-        Principal: cognito-idp.amazonaws.com
-        SourceArn: !GetAtt UserPool.Arn
-    PreSignUpInvokePermission:
-      Type: AWS::Lambda::Permission
-      Properties:
-        Action: lambda:InvokeFunction
-        FunctionName: !Ref PreSignUpLambdaFunction
-        Principal: cognito-idp.amazonaws.com
-        SourceArn: !GetAtt UserPool.Arn
   Outputs:
     ApiBaseUrl:
       Value: !GetAtt HttpApi.ApiEndpoint
