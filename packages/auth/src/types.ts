@@ -1,6 +1,7 @@
 export interface AuthConfig {
   userPoolId: string;
   clientId: string;
+  apiBaseUrl: string;
 }
 
 export interface SignUpParams {
