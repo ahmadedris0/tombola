@@ -249,6 +249,22 @@ functions:
           method: get
           authorizer:
             name: cognitoJwt
+  myNotifications:
+    handler: src/handlers/notifications.mine
+    events:
+      - httpApi:
+          path: /me/notifications
+          method: get
+          authorizer:
+            name: cognitoJwt
+  markNotificationsRead:
+    handler: src/handlers/notifications.read
+    events:
+      - httpApi:
+          path: /me/notifications/read
+          method: post
+          authorizer:
+            name: cognitoJwt
   paymentProof:
     handler: src/handlers/payments.proof
     events:

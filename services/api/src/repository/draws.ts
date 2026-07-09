@@ -18,6 +18,7 @@ export interface DrawResult {
   winningNumber: number;
   winnerUserId?: string;
   winnerName?: string;
+  participantUserIds: string[];
   poolSize: number;
   drawnAt: string;
 }
@@ -39,6 +40,13 @@ export async function runDraw(tombolaId: string, adminId: string): Promise<DrawR
   const winCell = numbers.find((n) => n.number === winningNumber);
   const winnerUserId = winCell?.state === 'confirmed' ? winCell.ownerUserId : undefined;
   const winnerName = winCell?.state === 'confirmed' ? winCell.ownerName : undefined;
+  const participantUserIds = [
+    ...new Set(
+      numbers
+        .filter((n) => n.state === 'confirmed' && n.ownerUserId)
+        .map((n) => n.ownerUserId as string),
+    ),
+  ];
   const drawnAt = new Date().toISOString();
 
   // Atomic claim: only an active/closed tombola can transition to finished. Doubles as the lock.
@@ -88,7 +96,7 @@ export async function runDraw(tombolaId: string, adminId: string): Promise<DrawR
     }),
   );
 
-  return { winningNumber, winnerUserId, winnerName, poolSize: pool.length, drawnAt };
+  return { winningNumber, winnerUserId, winnerName, participantUserIds, poolSize: pool.length, drawnAt };
 }
 
 export async function getDrawAudit(tombolaId: string): Promise<Record<string, unknown> | null> {

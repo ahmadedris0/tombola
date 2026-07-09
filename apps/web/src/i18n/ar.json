@@ -34,6 +34,17 @@
       "userNotFound": "لا يوجد حساب بهذا الرقم."
     }
   },
+  "notif": {
+    "title": "الإشعارات",
+    "empty": "لا إشعارات بعد.",
+    "reservation_created": "تم حجز الأرقام {{numbers}} — ادفع {{amount}} {{currency}} قبل انتهاء المهلة.",
+    "expiry_reminder": "تذكير: حجزك للرقم {{number}} سينتهي قريباً.",
+    "reservation_expired": "انتهى حجزك للرقم {{number}}.",
+    "payment_confirmed": "تم تأكيد الدفع للأرقام {{numbers}} 🎉",
+    "payment_rejected": "تم رفض الدفع للأرقام {{numbers}}.",
+    "draw_won": "لقد فزت! 🎉 الرقم الفائز {{winningNumber}}.",
+    "draw_result": "تم السحب — الرقم الفائز {{winningNumber}}."
+  },
   "tombola": {
     "gridView": "شبكة",
     "listView": "قائمة",

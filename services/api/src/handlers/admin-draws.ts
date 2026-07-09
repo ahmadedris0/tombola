@@ -1,6 +1,7 @@
 import type { APIGatewayProxyStructuredResultV2 } from 'aws-lambda';
 import { json, claimSub, type AuthedEvent } from '../lib/http';
 import { runDraw, getDrawAudit, DrawError } from '../repository/draws';
+import { notify } from '../lib/notify';
 
 const STATUS: Record<string, number> = {
   not_found: 404,
@@ -12,7 +13,15 @@ const STATUS: Record<string, number> = {
 export const draw = async (event: AuthedEvent): Promise<APIGatewayProxyStructuredResultV2> => {
   const id = event.pathParameters?.id ?? '';
   try {
-    return json(200, await runDraw(id, claimSub(event)));
+    const result = await runDraw(id, claimSub(event));
+    for (const uid of result.participantUserIds) {
+      const won = uid === result.winnerUserId;
+      await notify(uid, won ? 'draw_won' : 'draw_result', {
+        tombolaId: id,
+        winningNumber: result.winningNumber,
+      });
+    }
+    return json(200, result);
   } catch (e) {
     if (e instanceof DrawError) return json(STATUS[e.code] ?? 400, { error: e.code });
     throw e;

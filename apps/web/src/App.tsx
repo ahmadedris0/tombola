@@ -8,6 +8,8 @@ import { ForgotPassword } from './pages/ForgotPassword';
 import { Profile } from './pages/Profile';
 import { Tombolas } from './pages/Tombolas';
 import { TombolaDetail } from './pages/TombolaDetail';
+import { Notifications } from './pages/Notifications';
+import { NotificationsBell } from './components/NotificationsBell';
 import { RequireAuth } from './auth/RequireAuth';
 import { useAuth } from './auth/AuthProvider';
 
@@ -16,6 +18,7 @@ function HeaderActions() {
   const { user } = useAuth();
   return (
     <div className="flex items-center gap-3">
+      <NotificationsBell />
       <Link to={user ? '/profile' : '/login'} className="text-sm underline">
         {user ? t('auth.profile') : t('auth.login')}
       </Link>
@@ -46,6 +49,14 @@ export default function App() {
           element={
             <RequireAuth>
               <Profile />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/notifications"
+          element={
+            <RequireAuth>
+              <Notifications />
             </RequireAuth>
           }
         />

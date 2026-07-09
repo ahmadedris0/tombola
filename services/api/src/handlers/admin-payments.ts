@@ -2,6 +2,7 @@ import type { APIGatewayProxyStructuredResultV2 } from 'aws-lambda';
 import { json, claimSub, type AuthedEvent } from '../lib/http';
 import { listPendingPayments, getPayment, markPaymentReviewed } from '../repository/payments';
 import { confirmNumbers, cancelNumbers } from '../repository/reservations';
+import { notify } from '../lib/notify';
 
 export const list = async (): Promise<APIGatewayProxyStructuredResultV2> => {
   return json(200, { payments: await listPendingPayments() });
@@ -27,6 +28,10 @@ async function review(
     await cancelNumbers(tombolaId, numbers, userId);
   }
   await markPaymentReviewed(paymentId, outcome, adminId);
+  await notify(userId, outcome === 'confirmed' ? 'payment_confirmed' : 'payment_rejected', {
+    tombolaId,
+    numbers,
+  });
   return json(200, { ok: true });
 }
 
