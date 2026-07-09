@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { Tombola, NumberCell } from '@tombola/shared';
@@ -14,6 +14,12 @@ export function TombolaDetail() {
   const [selected, setSelected] = useState<NumberCell | null>(null);
   const [error, setError] = useState(false);
   const locale = i18n.language === 'ar' ? 'ar' : 'en';
+
+  const reloadNumbers = useCallback(() => {
+    fetchNumbers(id)
+      .then(setCells)
+      .catch(() => setError(true));
+  }, [id]);
 
   useEffect(() => {
     Promise.all([fetchTombola(id), fetchNumbers(id)])
@@ -36,7 +42,12 @@ export function TombolaDetail() {
         {t('tombola.prize')}: {tombola.prizeAmount} {tombola.currency} · {taken}/{tombola.gridSize}
       </p>
       <NumberGrid cells={cells} onSelect={setSelected} />
-      <CellSheet cell={selected} onClose={() => setSelected(null)} />
+      <CellSheet
+        cell={selected}
+        tombolaId={id}
+        onClose={() => setSelected(null)}
+        onChanged={reloadNumbers}
+      />
     </div>
   );
 }

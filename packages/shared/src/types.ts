@@ -44,6 +44,7 @@ export interface NumberCell {
   labelAr: string;
   state: NumberState;
   ownerUserId?: string;
+  ownerName?: string;
   reservedAt?: string;
   reservationExpiresAt?: string;
   confirmedAt?: string;
