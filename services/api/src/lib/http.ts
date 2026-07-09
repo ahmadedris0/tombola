@@ -17,6 +17,10 @@ export function claimSub(event: AuthedEvent): string {
   return String(event.requestContext?.authorizer?.jwt?.claims?.sub ?? '');
 }
 
+export function claimName(event: AuthedEvent): string {
+  return String(event.requestContext?.authorizer?.jwt?.claims?.name ?? '');
+}
+
 /** Cognito groups arrive either as an array or an HTTP-API-stringified `[admin ...]`. */
 export function getGroups(event: AuthedEvent): string[] {
   const raw = event.requestContext?.authorizer?.jwt?.claims?.['cognito:groups'];
