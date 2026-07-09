@@ -10,7 +10,7 @@ function pad(n: number): string {
 }
 
 const RELEASE_UPDATE =
-  'SET #s = :available REMOVE ownerUserId, ownerName, reservedAt, reservationExpiresAt, GSI2PK, GSI2SK, GSI3PK, GSI3SK';
+  'SET #s = :available REMOVE ownerUserId, ownerName, paymentId, reservedAt, reservationExpiresAt, GSI2PK, GSI2SK, GSI3PK, GSI3SK';
 
 export interface ReserveResult {
   reserved: number[];
@@ -31,8 +31,9 @@ export async function reserveNumbers(params: {
   userId: string;
   ownerName: string;
   windowMinutes: number;
+  paymentId: string;
 }): Promise<ReserveResult> {
-  const { tombolaId, numbers, userId, ownerName, windowMinutes } = params;
+  const { tombolaId, numbers, userId, ownerName, windowMinutes, paymentId } = params;
   const now = new Date();
   const nowIso = now.toISOString();
   const expIso = new Date(now.getTime() + windowMinutes * 60_000).toISOString();
@@ -43,13 +44,14 @@ export async function reserveNumbers(params: {
       Key: { PK: `TOMBOLA#${tombolaId}`, SK: `NUMBER#${pad(n)}` },
       ConditionExpression: '#s = :available',
       UpdateExpression:
-        'SET #s = :reserved, ownerUserId = :uid, ownerName = :uname, reservedAt = :now, reservationExpiresAt = :exp, GSI2PK = :g2pk, GSI2SK = :g2sk, GSI3PK = :g3pk, GSI3SK = :g3sk',
+        'SET #s = :reserved, ownerUserId = :uid, ownerName = :uname, paymentId = :pid, reservedAt = :now, reservationExpiresAt = :exp, GSI2PK = :g2pk, GSI2SK = :g2sk, GSI3PK = :g3pk, GSI3SK = :g3sk',
       ExpressionAttributeNames: { '#s': 'state' },
       ExpressionAttributeValues: {
         ':available': 'available',
         ':reserved': 'reserved',
         ':uid': userId,
         ':uname': ownerName,
+        ':pid': paymentId,
         ':now': nowIso,
         ':exp': expIso,
         ':g2pk': `USER#${userId}`,
@@ -101,6 +103,39 @@ export async function cancelNumbers(
   return released;
 }
 
+/** Confirms (marks sold) the given reserved numbers owned by userId; stops their expiry. */
+export async function confirmNumbers(
+  tombolaId: string,
+  numbers: number[],
+  userId: string,
+): Promise<number[]> {
+  const confirmed: number[] = [];
+  for (const n of numbers) {
+    try {
+      await ddb.send(
+        new UpdateCommand({
+          TableName: TABLE_NAME,
+          Key: { PK: `TOMBOLA#${tombolaId}`, SK: `NUMBER#${pad(n)}` },
+          ConditionExpression: '#s = :reserved AND ownerUserId = :uid',
+          UpdateExpression:
+            'SET #s = :confirmed, confirmedAt = :now REMOVE reservationExpiresAt, GSI3PK, GSI3SK',
+          ExpressionAttributeNames: { '#s': 'state' },
+          ExpressionAttributeValues: {
+            ':reserved': 'reserved',
+            ':confirmed': 'confirmed',
+            ':uid': userId,
+            ':now': new Date().toISOString(),
+          },
+        }),
+      );
+      confirmed.push(n);
+    } catch (e) {
+      if ((e as { name?: string }).name !== 'ConditionalCheckFailedException') throw e;
+    }
+  }
+  return confirmed;
+}
+
 /** Count of the caller's currently-reserved (pending) numbers, for the per-user cap. */
 export async function countUserPending(userId: string): Promise<number> {
   const res = await ddb.send(
@@ -134,8 +169,11 @@ export async function listUserReservations(userId: string): Promise<Record<strin
   }));
 }
 
-/** Sweep: releases overdue reserved holds. Returns the count released. */
-export async function releaseExpired(nowIso: string, limit = 100): Promise<number> {
+/** Sweep: releases overdue reserved holds. Returns the count released + affected payment ids. */
+export async function releaseExpired(
+  nowIso: string,
+  limit = 100,
+): Promise<{ released: number; paymentIds: string[] }> {
   const res = await ddb.send(
     new QueryCommand({
       TableName: TABLE_NAME,
@@ -146,6 +184,7 @@ export async function releaseExpired(nowIso: string, limit = 100): Promise<numbe
     }),
   );
   let released = 0;
+  const paymentIds = new Set<string>();
   for (const item of res.Items ?? []) {
     try {
       await ddb.send(
@@ -159,9 +198,10 @@ export async function releaseExpired(nowIso: string, limit = 100): Promise<numbe
         }),
       );
       released++;
+      if (item.paymentId) paymentIds.add(item.paymentId as string);
     } catch (e) {
       if ((e as { name?: string }).name !== 'ConditionalCheckFailedException') throw e;
     }
   }
-  return released;
+  return { released, paymentIds: [...paymentIds] };
 }

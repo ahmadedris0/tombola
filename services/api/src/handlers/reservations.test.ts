@@ -7,9 +7,11 @@ const h = vi.hoisted(() => ({
   cancelNumbers: vi.fn(),
   countUserPending: vi.fn(),
   listUserReservations: vi.fn(),
+  createPayment: vi.fn(),
 }));
 vi.mock('../repository/tombolas', () => ({ getTombola: h.getTombola }));
 vi.mock('../repository/users', () => ({ getUserBySub: h.getUserBySub }));
+vi.mock('../repository/payments', () => ({ createPayment: h.createPayment }));
 vi.mock('../repository/reservations', async (orig) => {
   const actual = await orig<typeof import('../repository/reservations')>();
   return {
