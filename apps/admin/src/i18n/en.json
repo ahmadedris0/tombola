@@ -4,6 +4,7 @@
   "auth": {
     "login": "Admin log in",
     "logout": "Log out",
+    "email": "Email",
     "phone": "Phone number",
     "password": "Password",
     "notAdmin": "This account is not an administrator.",

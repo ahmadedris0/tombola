@@ -38,6 +38,13 @@ provider:
           Fn::Sub: https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPool}
         audience:
           - !Ref UserPoolClient
+      adminJwt:
+        type: jwt
+        identitySource: $request.header.Authorization
+        issuerUrl:
+          Fn::Sub: https://cognito-idp.${AWS::Region}.amazonaws.com/${AdminUserPool}
+        audience:
+          - !Ref AdminUserPoolClient
   iam:
     role:
       statements:
@@ -162,7 +169,7 @@ functions:
           path: /admin/tombolas
           method: get
           authorizer:
-            name: cognitoJwt
+            name: adminJwt
   adminCreateTombola:
     handler: src/handlers/admin-tombolas.create
     events:
@@ -170,7 +177,7 @@ functions:
           path: /admin/tombolas
           method: post
           authorizer:
-            name: cognitoJwt
+            name: adminJwt
   adminUpdateTombola:
     handler: src/handlers/admin-tombolas.update
     events:
@@ -178,7 +185,7 @@ functions:
           path: '/admin/tombolas/{id}'
           method: put
           authorizer:
-            name: cognitoJwt
+            name: adminJwt
   adminDuplicateTombola:
     handler: src/handlers/admin-tombolas.duplicate
     events:
@@ -186,7 +193,7 @@ functions:
           path: '/admin/tombolas/{id}/duplicate'
           method: post
           authorizer:
-            name: cognitoJwt
+            name: adminJwt
   adminDeleteTombola:
     handler: src/handlers/admin-tombolas.remove
     events:
@@ -194,7 +201,7 @@ functions:
           path: '/admin/tombolas/{id}'
           method: delete
           authorizer:
-            name: cognitoJwt
+            name: adminJwt
   adminEditNumber:
     handler: src/handlers/admin-tombolas.editNumber
     events:
@@ -202,7 +209,7 @@ functions:
           path: '/admin/tombolas/{id}/numbers/{n}'
           method: put
           authorizer:
-            name: cognitoJwt
+            name: adminJwt
 
 resources:
   Resources:
@@ -274,6 +281,29 @@ resources:
       Properties:
         GroupName: admin
         UserPoolId: !Ref UserPool
+    AdminUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: tombola-admin-${self:provider.stage}
+        UsernameAttributes: [email]
+        AdminCreateUserConfig:
+          AllowAdminCreateUserOnly: true
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 8
+            RequireLowercase: true
+            RequireNumbers: true
+            RequireUppercase: false
+            RequireSymbols: false
+        Schema:
+          - { Name: name, AttributeDataType: String, Mutable: true, Required: false }
+    AdminUserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        UserPoolId: !Ref AdminUserPool
+        ClientName: tombola-admin-${self:provider.stage}
+        GenerateSecret: false
+        ExplicitAuthFlows: [ALLOW_USER_SRP_AUTH, ALLOW_REFRESH_TOKEN_AUTH]
   Outputs:
     ApiBaseUrl:
       Value: !GetAtt HttpApi.ApiEndpoint
@@ -281,3 +311,7 @@ resources:
       Value: !Ref UserPool
     UserPoolClientId:
       Value: !Ref UserPoolClient
+    AdminUserPoolId:
+      Value: !Ref AdminUserPool
+    AdminUserPoolClientId:
+      Value: !Ref AdminUserPoolClient

@@ -4,7 +4,7 @@ import {
   updateTombolaInputSchema,
   updateNumberLabelSchema,
 } from '@tombola/shared';
-import { json, isAdmin, claimSub, parseBody, type AuthedEvent } from '../lib/http';
+import { json, claimSub, parseBody, type AuthedEvent } from '../lib/http';
 import {
   createTombola,
   updateTombola,
@@ -14,20 +14,11 @@ import {
   updateNumberLabel,
 } from '../repository/tombolas';
 
-function guard(event: AuthedEvent): APIGatewayProxyStructuredResultV2 | null {
-  if (!isAdmin(event)) return json(403, { error: 'forbidden' });
-  return null;
-}
-
-export const list = async (event: AuthedEvent): Promise<APIGatewayProxyStructuredResultV2> => {
-  const denied = guard(event);
-  if (denied) return denied;
+export const list = async (): Promise<APIGatewayProxyStructuredResultV2> => {
   return json(200, { tombolas: await listAllTombolas() });
 };
 
 export const create = async (event: AuthedEvent): Promise<APIGatewayProxyStructuredResultV2> => {
-  const denied = guard(event);
-  if (denied) return denied;
   const parsed = createTombolaInputSchema.safeParse(parseBody(event));
   if (!parsed.success) return json(400, { error: 'invalid_body', issues: parsed.error.issues });
   const tombola = await createTombola(parsed.data, claimSub(event));
@@ -35,8 +26,6 @@ export const create = async (event: AuthedEvent): Promise<APIGatewayProxyStructu
 };
 
 export const update = async (event: AuthedEvent): Promise<APIGatewayProxyStructuredResultV2> => {
-  const denied = guard(event);
-  if (denied) return denied;
   const id = event.pathParameters?.id ?? '';
   const parsed = updateTombolaInputSchema.safeParse(parseBody(event));
   if (!parsed.success) return json(400, { error: 'invalid_body', issues: parsed.error.issues });
@@ -46,8 +35,6 @@ export const update = async (event: AuthedEvent): Promise<APIGatewayProxyStructu
 };
 
 export const duplicate = async (event: AuthedEvent): Promise<APIGatewayProxyStructuredResultV2> => {
-  const denied = guard(event);
-  if (denied) return denied;
   const id = event.pathParameters?.id ?? '';
   const created = await duplicateTombola(id, claimSub(event));
   if (!created) return json(404, { error: 'not_found' });
@@ -55,8 +42,6 @@ export const duplicate = async (event: AuthedEvent): Promise<APIGatewayProxyStru
 };
 
 export const remove = async (event: AuthedEvent): Promise<APIGatewayProxyStructuredResultV2> => {
-  const denied = guard(event);
-  if (denied) return denied;
   const id = event.pathParameters?.id ?? '';
   const ok = await softDeleteTombola(id);
   if (!ok) return json(404, { error: 'not_found' });
@@ -64,8 +49,6 @@ export const remove = async (event: AuthedEvent): Promise<APIGatewayProxyStructu
 };
 
 export const editNumber = async (event: AuthedEvent): Promise<APIGatewayProxyStructuredResultV2> => {
-  const denied = guard(event);
-  if (denied) return denied;
   const id = event.pathParameters?.id ?? '';
   const n = Number(event.pathParameters?.n);
   if (!Number.isInteger(n)) return json(400, { error: 'invalid_number' });

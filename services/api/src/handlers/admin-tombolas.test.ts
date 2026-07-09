@@ -10,7 +10,7 @@ const r = vi.hoisted(() => ({
 }));
 vi.mock('../repository/tombolas', () => r);
 
-import { create, remove, list } from './admin-tombolas';
+import { create, remove } from './admin-tombolas';
 
 const validBody = {
   title: { en: 'Cars', ar: 'سيارات' },
@@ -28,18 +28,8 @@ function evt(groups: string[] | undefined, body?: unknown, params?: Record<strin
 
 beforeEach(() => Object.values(r).forEach((m) => m.mockReset()));
 
-describe('admin tombola gating', () => {
-  it('rejects a non-admin with 403', async () => {
-    const res = await list(evt(undefined));
-    expect(res.statusCode).toBe(403);
-    expect(r.listAllTombolas).not.toHaveBeenCalled();
-  });
-  it('accepts the admin group as a stringified array', async () => {
-    r.listAllTombolas.mockResolvedValue([]);
-    const res = await list(evt('[admin]' as unknown as string[]));
-    expect(res.statusCode).toBe(200);
-  });
-});
+// Access control is enforced by the `adminJwt` HTTP API authorizer (admin user pool),
+// so handlers no longer perform a group check — only admin-pool tokens ever reach them.
 
 describe('create', () => {
   it('creates with defaults applied and returns 201', async () => {
