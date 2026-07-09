@@ -281,6 +281,22 @@ functions:
           method: post
           authorizer:
             name: adminJwt
+  adminDrawTombola:
+    handler: src/handlers/admin-draws.draw
+    events:
+      - httpApi:
+          path: '/admin/tombolas/{id}/draw'
+          method: post
+          authorizer:
+            name: adminJwt
+  adminDrawAudit:
+    handler: src/handlers/admin-draws.audit
+    events:
+      - httpApi:
+          path: '/admin/tombolas/{id}/draw'
+          method: get
+          authorizer:
+            name: adminJwt
 
 resources:
   Resources:
