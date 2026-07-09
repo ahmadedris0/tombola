@@ -2,12 +2,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const h = vi.hoisted(() => ({
   getTombola: vi.fn(),
+  getUserBySub: vi.fn(),
   reserveNumbers: vi.fn(),
   cancelNumbers: vi.fn(),
   countUserPending: vi.fn(),
   listUserReservations: vi.fn(),
 }));
 vi.mock('../repository/tombolas', () => ({ getTombola: h.getTombola }));
+vi.mock('../repository/users', () => ({ getUserBySub: h.getUserBySub }));
 vi.mock('../repository/reservations', async (orig) => {
   const actual = await orig<typeof import('../repository/reservations')>();
   return {
@@ -44,6 +46,7 @@ beforeEach(() => Object.values(h).forEach((m) => m.mockReset()));
 describe('reserve', () => {
   it('reserves and returns payment instructions (masked amount, whish, expiry)', async () => {
     h.getTombola.mockResolvedValue(activeTombola);
+    h.getUserBySub.mockResolvedValue({ fullName: 'Ahmad Edris' });
     h.countUserPending.mockResolvedValue(0);
     h.reserveNumbers.mockResolvedValue({ reserved: [5, 6], reservationExpiresAt: '2026-07-09T12:00:00.000Z' });
     process.env.WHISH_NUMBER = '70999888';

@@ -1,8 +1,9 @@
 import type { APIGatewayProxyStructuredResultV2 } from 'aws-lambda';
 import { z } from 'zod';
 import { maskName } from '@tombola/shared';
-import { json, claimSub, claimName, parseBody, type AuthedEvent } from '../lib/http';
+import { json, claimSub, parseBody, type AuthedEvent } from '../lib/http';
 import { getTombola } from '../repository/tombolas';
+import { getUserBySub } from '../repository/users';
 import {
   reserveNumbers,
   cancelNumbers,
@@ -31,12 +32,13 @@ export const reserve = async (event: AuthedEvent): Promise<APIGatewayProxyStruct
     return json(400, { error: 'cap_exceeded', cap: RESERVATION_CAP, pending });
   }
 
+  const mirror = await getUserBySub(userId);
   try {
     const result = await reserveNumbers({
       tombolaId,
       numbers,
       userId,
-      ownerName: maskName(claimName(event)),
+      ownerName: maskName(String(mirror?.fullName ?? '')),
       windowMinutes: tombola.reservationWindowMinutes,
     });
     const whishNumber = tombola.whishNumberOverride || process.env.WHISH_NUMBER || 'TBD';
