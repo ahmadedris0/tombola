@@ -6,6 +6,7 @@ import { json, claimSub, parseBody, type AuthedEvent } from '../lib/http';
 import { getTombola } from '../repository/tombolas';
 import { getUserBySub } from '../repository/users';
 import { createPayment } from '../repository/payments';
+import { notify } from '../lib/notify';
 import {
   reserveNumbers,
   cancelNumbers,
@@ -47,6 +48,13 @@ export const reserve = async (event: AuthedEvent): Promise<APIGatewayProxyStruct
     });
     const amount = tombola.pricePerNumber * numbers.length;
     await createPayment({ paymentId, tombolaId, numbers, userId, amount, currency: tombola.currency });
+    await notify(userId, 'reservation_created', {
+      tombolaId,
+      numbers: result.reserved,
+      amount,
+      currency: tombola.currency,
+      deadline: result.reservationExpiresAt,
+    });
     const whishNumber = tombola.whishNumberOverride || process.env.WHISH_NUMBER || 'TBD';
     return json(200, {
       paymentId,

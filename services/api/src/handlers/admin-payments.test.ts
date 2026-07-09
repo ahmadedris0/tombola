@@ -16,6 +16,7 @@ vi.mock('../repository/reservations', () => ({
   confirmNumbers: h.confirmNumbers,
   cancelNumbers: h.cancelNumbers,
 }));
+vi.mock('../lib/notify', () => ({ notify: vi.fn() }));
 
 import { confirm, reject } from './admin-payments';
 
