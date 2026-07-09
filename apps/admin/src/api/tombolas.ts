@@ -41,3 +41,11 @@ export async function deleteTombola(token: string, id: string): Promise<void> {
   const res = await authFetch(token, `/admin/tombolas/${id}`, 'DELETE');
   if (!res.ok) throw new Error('delete_failed');
 }
+
+export async function drawTombola(token: string, id: string): Promise<void> {
+  const res = await authFetch(token, `/admin/tombolas/${id}/draw`, 'POST');
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(body.error ?? 'draw_failed');
+  }
+}

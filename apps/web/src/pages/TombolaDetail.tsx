@@ -41,6 +41,14 @@ export function TombolaDetail() {
       <p className="mb-4 text-sm text-gray-600">
         {t('tombola.prize')}: {tombola.prizeAmount} {tombola.currency} · {taken}/{tombola.gridSize}
       </p>
+      {tombola.status === 'finished' && tombola.winningNumber != null && (
+        <div className="mb-4 rounded-lg border border-green-300 bg-green-50 p-4 text-center">
+          <p className="text-sm text-green-700">{t('tombola.winnerBanner')}</p>
+          <p className="text-2xl font-bold text-green-800">
+            #{tombola.winningNumber} — {tombola.winnerName ?? '—'}
+          </p>
+        </div>
+      )}
       <NumberGrid cells={cells} onSelect={setSelected} />
       <CellSheet
         cell={selected}

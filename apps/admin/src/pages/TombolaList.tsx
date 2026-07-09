@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import type { Tombola } from '@tombola/shared';
 import { useAuth } from '../auth/AuthProvider';
-import { listAdminTombolas, duplicateTombola, deleteTombola } from '../api/tombolas';
+import { listAdminTombolas, duplicateTombola, deleteTombola, drawTombola } from '../api/tombolas';
 
 export function TombolaList() {
   const { t, i18n } = useTranslation();
@@ -31,6 +31,15 @@ export function TombolaList() {
     await deleteTombola(token, id);
     load();
   }
+  async function onDraw(id: string) {
+    if (!token || !confirm(t('admin.confirmDraw'))) return;
+    try {
+      await drawTombola(token, id);
+    } catch (e) {
+      alert(t('admin.drawError', { reason: (e as Error).message }));
+    }
+    load();
+  }
 
   return (
     <div className="mx-auto max-w-3xl p-4">
@@ -43,14 +52,28 @@ export function TombolaList() {
       {error && <p className="text-red-600">{t('admin.loadError')}</p>}
       <ul className="divide-y rounded border">
         {items.map((tb) => (
-          <li key={tb.tombolaId} className="flex items-center justify-between p-3">
+          <li key={tb.tombolaId} className="flex items-center justify-between gap-2 p-3">
             <div>
               <p className="font-semibold">{tb.title[locale]}</p>
               <p className="text-sm text-gray-500">
                 {t(`admin.state.${tb.status}`)} · {tb.gridSize} · {tb.prizeAmount} {tb.currency}
               </p>
+              {tb.status === 'finished' && tb.winningNumber != null && (
+                <p className="text-sm font-semibold text-green-700">
+                  {t('admin.winner')}: #{tb.winningNumber} — {tb.winnerName ?? '—'}
+                </p>
+              )}
             </div>
-            <div className="flex gap-2 text-sm">
+            <div className="flex flex-wrap justify-end gap-2 text-sm">
+              {(tb.status === 'active' || tb.status === 'closed') && (
+                <button
+                  type="button"
+                  onClick={() => onDraw(tb.tombolaId)}
+                  className="min-h-touch rounded bg-green-700 px-2 py-1 text-white"
+                >
+                  {t('admin.runDraw')}
+                </button>
+              )}
               <Link to={`/${tb.tombolaId}/edit`} className="min-h-touch rounded border px-2 py-1">
                 {t('admin.edit')}
               </Link>
