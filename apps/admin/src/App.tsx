@@ -1,9 +1,10 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from './components/LanguageSwitcher';
 import { Login } from './pages/Login';
 import { TombolaList } from './pages/TombolaList';
 import { TombolaForm } from './pages/TombolaForm';
+import { PaymentsQueue } from './pages/PaymentsQueue';
 import { RequireAdmin } from './auth/RequireAdmin';
 import { useAuth } from './auth/AuthProvider';
 
@@ -12,8 +13,14 @@ function HeaderActions() {
   const { user, signOut } = useAuth();
   if (!user) return <LanguageSwitcher />;
   return (
-    <div className="flex items-center gap-3">
-      <button onClick={signOut} className="text-sm underline">
+    <div className="flex items-center gap-3 text-sm">
+      <Link to="/" className="underline">
+        {t('admin.tombolas')}
+      </Link>
+      <Link to="/payments" className="underline">
+        {t('payments.queue')}
+      </Link>
+      <button onClick={signOut} className="underline">
         {t('auth.logout')}
       </button>
       <LanguageSwitcher />
@@ -51,6 +58,14 @@ export default function App() {
           element={
             <RequireAdmin>
               <TombolaForm />
+            </RequireAdmin>
+          }
+        />
+        <Route
+          path="/payments"
+          element={
+            <RequireAdmin>
+              <PaymentsQueue />
             </RequireAdmin>
           }
         />

@@ -49,5 +49,14 @@
       "finished": "Finished",
       "cancelled": "Cancelled"
     }
+  },
+  "payments": {
+    "queue": "Payments",
+    "loadError": "Could not load payments.",
+    "numbers": "Numbers",
+    "reference": "Whish ref",
+    "confirm": "Confirm",
+    "reject": "Reject",
+    "empty": "No pending payments."
   }
 }

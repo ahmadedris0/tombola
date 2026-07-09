@@ -49,5 +49,14 @@
       "finished": "منتهٍ",
       "cancelled": "ملغى"
     }
+  },
+  "payments": {
+    "queue": "المدفوعات",
+    "loadError": "تعذّر تحميل المدفوعات.",
+    "numbers": "الأرقام",
+    "reference": "مرجع Whish",
+    "confirm": "تأكيد",
+    "reject": "رفض",
+    "empty": "لا مدفوعات معلّقة."
   }
 }
