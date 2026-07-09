@@ -11,6 +11,31 @@ provider:
   environment:
     STAGE: ${self:provider.stage}
     TABLE_NAME: ${self:service}-${self:provider.stage}
+    OTP_DELIVERY: ${env:OTP_DELIVERY, 'stub'}
+    WHATSAPP_SECRET_ID: !Ref WhatsAppSecret
+    USER_POOL_ID: !Ref UserPool
+    USER_POOL_CLIENT_ID: !Ref UserPoolClient
+  httpApi:
+    cors:
+      allowedOrigins:
+        - https://d5udiniaf9iiw.cloudfront.net
+        - http://localhost:5173
+      allowedHeaders:
+        - Content-Type
+        - Authorization
+      allowedMethods:
+        - GET
+        - PUT
+        - POST
+        - OPTIONS
+    authorizers:
+      cognitoJwt:
+        type: jwt
+        identitySource: $request.header.Authorization
+        issuerUrl:
+          Fn::Sub: https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPool}
+        audience:
+          - !Ref UserPoolClient
   iam:
     role:
       statements:
@@ -24,6 +49,17 @@ provider:
           Resource:
             - !GetAtt TombolaTable.Arn
             - !Sub '${TombolaTable.Arn}/index/*'
+        - Effect: Allow
+          Action: secretsmanager:GetSecretValue
+          Resource: !Ref WhatsAppSecret
+        - Effect: Allow
+          Action:
+            - cognito-idp:SignUp
+            - cognito-idp:AdminConfirmSignUp
+            - cognito-idp:AdminUpdateUserAttributes
+            - cognito-idp:AdminGetUser
+            - cognito-idp:AdminSetUserPassword
+          Resource: !GetAtt UserPool.Arn
 
 plugins:
   - serverless-esbuild
@@ -36,6 +72,8 @@ custom:
     format: esm
     platform: node
     outputFileExtension: .mjs
+    banner:
+      js: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);"
 
 functions:
   health:
@@ -43,6 +81,58 @@ functions:
     events:
       - httpApi:
           path: /health
+          method: get
+  register:
+    handler: src/handlers/auth.register
+    events:
+      - httpApi:
+          path: /auth/register
+          method: post
+  verify:
+    handler: src/handlers/auth.verify
+    events:
+      - httpApi:
+          path: /auth/verify
+          method: post
+  resend:
+    handler: src/handlers/auth.resend
+    events:
+      - httpApi:
+          path: /auth/resend
+          method: post
+  forgot:
+    handler: src/handlers/auth.forgot
+    events:
+      - httpApi:
+          path: /auth/forgot
+          method: post
+  reset:
+    handler: src/handlers/auth.reset
+    events:
+      - httpApi:
+          path: /auth/reset
+          method: post
+  getMe:
+    handler: src/handlers/me.getMe
+    events:
+      - httpApi:
+          path: /me
+          method: get
+          authorizer:
+            name: cognitoJwt
+  updateMe:
+    handler: src/handlers/me.updateMe
+    events:
+      - httpApi:
+          path: /me
+          method: put
+          authorizer:
+            name: cognitoJwt
+  devOtp:
+    handler: src/handlers/dev-otp.handler
+    events:
+      - httpApi:
+          path: '/dev/otp/{phone}'
           method: get
 
 resources:
@@ -80,6 +170,45 @@ resources:
               - { AttributeName: GSI3PK, KeyType: HASH }
               - { AttributeName: GSI3SK, KeyType: RANGE }
             Projection: { ProjectionType: ALL }
+        TimeToLiveSpecification:
+          AttributeName: ttl
+          Enabled: true
+    WhatsAppSecret:
+      Type: AWS::SecretsManager::Secret
+      Properties:
+        Name: tombola/whatsapp/${self:provider.stage}
+        SecretString: '{"phoneNumberId":"","accessToken":"","templateName":"tombola_otp"}'
+    UserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: tombola-${self:provider.stage}
+        UsernameAttributes: [phone_number]
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 8
+            RequireLowercase: true
+            RequireNumbers: true
+            RequireUppercase: false
+            RequireSymbols: false
+        Schema:
+          - { Name: name, AttributeDataType: String, Mutable: true, Required: true }
+          - { Name: locale, AttributeDataType: String, Mutable: true, Required: false }
+    UserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        UserPoolId: !Ref UserPool
+        ClientName: tombola-web-${self:provider.stage}
+        GenerateSecret: false
+        ExplicitAuthFlows: [ALLOW_USER_SRP_AUTH, ALLOW_REFRESH_TOKEN_AUTH]
+    AdminGroup:
+      Type: AWS::Cognito::UserPoolGroup
+      Properties:
+        GroupName: admin
+        UserPoolId: !Ref UserPool
   Outputs:
     ApiBaseUrl:
       Value: !GetAtt HttpApi.ApiEndpoint
+    UserPoolId:
+      Value: !Ref UserPool
+    UserPoolClientId:
+      Value: !Ref UserPoolClient

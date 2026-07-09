@@ -1,4 +1,17 @@
 {
   "app": { "title": "إدارة تومبولا", "tagline": "لوحة المشغّل" },
-  "lang": { "switchToArabic": "العربية", "switchToEnglish": "English" }
+  "lang": { "switchToArabic": "العربية", "switchToEnglish": "English" },
+  "auth": {
+    "login": "دخول المشرف",
+    "logout": "تسجيل الخروج",
+    "phone": "رقم الهاتف",
+    "password": "كلمة المرور",
+    "notAdmin": "هذا الحساب ليس مشرفاً.",
+    "error": {
+      "generic": "حدث خطأ ما. حاول مرة أخرى.",
+      "notAuthorized": "الرقم أو كلمة المرور غير صحيحة.",
+      "userNotConfirmed": "يرجى تأكيد رقمك أولاً.",
+      "userNotFound": "لا يوجد حساب بهذا الرقم."
+    }
+  }
 }
