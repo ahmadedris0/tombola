@@ -34,6 +34,17 @@
       "userNotFound": "No account found for this phone."
     }
   },
+  "notif": {
+    "title": "Notifications",
+    "empty": "No notifications yet.",
+    "reservation_created": "Reserved number(s) {{numbers}} — pay {{amount}} {{currency}} before expiry.",
+    "expiry_reminder": "Reminder: your hold on number {{number}} expires soon.",
+    "reservation_expired": "Your reservation for number {{number}} expired.",
+    "payment_confirmed": "Payment confirmed for number(s) {{numbers}} 🎉",
+    "payment_rejected": "Payment rejected for number(s) {{numbers}}.",
+    "draw_won": "You won! 🎉 Winning number {{winningNumber}}.",
+    "draw_result": "The draw is done — winning number {{winningNumber}}."
+  },
   "tombola": {
     "gridView": "Grid",
     "listView": "List",
