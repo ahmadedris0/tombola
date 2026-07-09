@@ -15,6 +15,8 @@ provider:
     WHATSAPP_SECRET_ID: !Ref WhatsAppSecret
     USER_POOL_ID: !Ref UserPool
     USER_POOL_CLIENT_ID: !Ref UserPoolClient
+    WHISH_NUMBER: ${env:WHISH_NUMBER, 'TBD'}
+    RESERVATION_CAP: ${env:RESERVATION_CAP, '10'}
   httpApi:
     cors:
       allowedOrigins:
@@ -55,6 +57,7 @@ provider:
             - dynamodb:UpdateItem
             - dynamodb:DeleteItem
             - dynamodb:BatchWriteItem
+            - dynamodb:TransactWriteItems
             - dynamodb:Query
           Resource:
             - !GetAtt TombolaTable.Arn
@@ -210,6 +213,34 @@ functions:
           method: put
           authorizer:
             name: adminJwt
+  reserve:
+    handler: src/handlers/reservations.reserve
+    events:
+      - httpApi:
+          path: '/tombolas/{id}/reserve'
+          method: post
+          authorizer:
+            name: cognitoJwt
+  cancelReservation:
+    handler: src/handlers/reservations.cancel
+    events:
+      - httpApi:
+          path: '/tombolas/{id}/cancel'
+          method: post
+          authorizer:
+            name: cognitoJwt
+  myReservations:
+    handler: src/handlers/reservations.mine
+    events:
+      - httpApi:
+          path: /me/reservations
+          method: get
+          authorizer:
+            name: cognitoJwt
+  sweepExpired:
+    handler: src/handlers/sweep.handler
+    events:
+      - schedule: rate(1 minute)
 
 resources:
   Resources:
