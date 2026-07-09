@@ -3,7 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import type { NumberCell } from '@tombola/shared';
 import { useAuth } from '../auth/AuthProvider';
-import { reserveNumbers, cancelReservation, type PaymentInstructions } from '../api/reservations';
+import {
+  reserveNumbers,
+  cancelReservation,
+  attachProof,
+  type PaymentInstructions,
+} from '../api/reservations';
 
 function useCountdown(iso?: string): number {
   const [secs, setSecs] = useState(0);
@@ -34,12 +39,29 @@ export function CellSheet({
   const [instructions, setInstructions] = useState<PaymentInstructions | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [ref, setRef] = useState('');
+  const [refSaved, setRefSaved] = useState(false);
   const secs = useCountdown(instructions?.reservationExpiresAt);
 
   useEffect(() => {
     setInstructions(null);
     setError(null);
+    setRef('');
+    setRefSaved(false);
   }, [cell?.number]);
+
+  async function submitProof() {
+    if (!token || !instructions || !ref.trim()) return;
+    setBusy(true);
+    try {
+      await attachProof(token, instructions.paymentId, ref.trim());
+      setRefSaved(true);
+    } catch {
+      setError(t('tombola.reserveError'));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   if (!cell) return null;
   const label = i18n.language === 'ar' ? cell.labelAr : cell.labelEn;
@@ -120,6 +142,32 @@ export function CellSheet({
               </div>
             </dl>
             <p className="mt-3 text-xs text-gray-500">{t('tombola.payHint')}</p>
+            <div className="mt-4">
+              <label className="block text-sm">{t('tombola.whishRef')}</label>
+              <div className="mt-1 flex gap-2">
+                <input
+                  value={ref}
+                  onChange={(e) => setRef(e.target.value)}
+                  dir="ltr"
+                  className="min-h-touch flex-1 rounded border px-3 py-2"
+                  placeholder="TX123456"
+                />
+                <button
+                  type="button"
+                  onClick={submitProof}
+                  disabled={busy || !ref.trim()}
+                  className="min-h-touch rounded border px-3 py-2 disabled:opacity-50"
+                >
+                  {t('tombola.submitRef')}
+                </button>
+              </div>
+              {refSaved && <p className="mt-1 text-sm text-green-600">{t('tombola.refSaved')}</p>}
+            </div>
+            {error && (
+              <p role="alert" className="mt-2 text-sm text-red-600">
+                {error}
+              </p>
+            )}
             <button
               type="button"
               onClick={doCancel}

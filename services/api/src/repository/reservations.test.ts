@@ -21,6 +21,7 @@ describe('reserveNumbers', () => {
       userId: 'u1',
       ownerName: 'Ahmad E.',
       windowMinutes: 60,
+      paymentId: 'p1',
     });
     expect(res.reserved).toEqual([5, 6]);
     expect(res.reservationExpiresAt).toMatch(/Z$/);
@@ -36,10 +37,10 @@ describe('reserveNumbers', () => {
     });
     mock.on(TransactWriteCommand).rejects(err);
     await expect(
-      reserveNumbers({ tombolaId: 't1', numbers: [5, 6], userId: 'u1', ownerName: 'A', windowMinutes: 60 }),
+      reserveNumbers({ tombolaId: 't1', numbers: [5, 6], userId: 'u1', ownerName: 'A', windowMinutes: 60, paymentId: 'p1' }),
     ).rejects.toMatchObject({ conflicts: [6] });
     await expect(
-      reserveNumbers({ tombolaId: 't1', numbers: [5, 6], userId: 'u1', ownerName: 'A', windowMinutes: 60 }),
+      reserveNumbers({ tombolaId: 't1', numbers: [5, 6], userId: 'u1', ownerName: 'A', windowMinutes: 60, paymentId: 'p1' }),
     ).rejects.toBeInstanceOf(ReserveConflictError);
   });
 });
@@ -53,8 +54,8 @@ describe('releaseExpired', () => {
       ],
     });
     mock.on(UpdateCommand).resolves({});
-    const released = await releaseExpired('2026-07-09T12:00:00.000Z');
-    expect(released).toBe(2);
+    const out = await releaseExpired("2026-07-09T12:00:00.000Z");
+    expect(out.released).toBe(2);
     const q = mock.commandCalls(QueryCommand)[0]!.args[0].input;
     expect(q.IndexName).toBe('GSI3');
     expect(q.KeyConditionExpression).toContain('GSI3SK < :now');
@@ -63,6 +64,6 @@ describe('releaseExpired', () => {
   it('skips holds already confirmed/cancelled (condition fails) without throwing', async () => {
     mock.on(QueryCommand).resolves({ Items: [{ PK: 'TOMBOLA#t1', SK: 'NUMBER#005' }] });
     mock.on(UpdateCommand).rejects(Object.assign(new Error('x'), { name: 'ConditionalCheckFailedException' }));
-    expect(await releaseExpired('2026-07-09T12:00:00.000Z')).toBe(0);
+    expect((await releaseExpired("2026-07-09T12:00:00.000Z")).released).toBe(0);
   });
 });

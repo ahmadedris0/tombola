@@ -241,6 +241,46 @@ functions:
     handler: src/handlers/sweep.handler
     events:
       - schedule: rate(1 minute)
+  myPayments:
+    handler: src/handlers/payments.mine
+    events:
+      - httpApi:
+          path: /me/payments
+          method: get
+          authorizer:
+            name: cognitoJwt
+  paymentProof:
+    handler: src/handlers/payments.proof
+    events:
+      - httpApi:
+          path: '/me/payments/{paymentId}/proof'
+          method: post
+          authorizer:
+            name: cognitoJwt
+  adminListPayments:
+    handler: src/handlers/admin-payments.list
+    events:
+      - httpApi:
+          path: /admin/payments
+          method: get
+          authorizer:
+            name: adminJwt
+  adminConfirmPayment:
+    handler: src/handlers/admin-payments.confirm
+    events:
+      - httpApi:
+          path: '/admin/payments/{paymentId}/confirm'
+          method: post
+          authorizer:
+            name: adminJwt
+  adminRejectPayment:
+    handler: src/handlers/admin-payments.reject
+    events:
+      - httpApi:
+          path: '/admin/payments/{paymentId}/reject'
+          method: post
+          authorizer:
+            name: adminJwt
 
 resources:
   Resources:

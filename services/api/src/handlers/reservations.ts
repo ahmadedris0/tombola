@@ -1,9 +1,11 @@
 import type { APIGatewayProxyStructuredResultV2 } from 'aws-lambda';
+import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { maskName } from '@tombola/shared';
 import { json, claimSub, parseBody, type AuthedEvent } from '../lib/http';
 import { getTombola } from '../repository/tombolas';
 import { getUserBySub } from '../repository/users';
+import { createPayment } from '../repository/payments';
 import {
   reserveNumbers,
   cancelNumbers,
@@ -33,6 +35,7 @@ export const reserve = async (event: AuthedEvent): Promise<APIGatewayProxyStruct
   }
 
   const mirror = await getUserBySub(userId);
+  const paymentId = randomUUID();
   try {
     const result = await reserveNumbers({
       tombolaId,
@@ -40,13 +43,17 @@ export const reserve = async (event: AuthedEvent): Promise<APIGatewayProxyStruct
       userId,
       ownerName: maskName(String(mirror?.fullName ?? '')),
       windowMinutes: tombola.reservationWindowMinutes,
+      paymentId,
     });
+    const amount = tombola.pricePerNumber * numbers.length;
+    await createPayment({ paymentId, tombolaId, numbers, userId, amount, currency: tombola.currency });
     const whishNumber = tombola.whishNumberOverride || process.env.WHISH_NUMBER || 'TBD';
     return json(200, {
+      paymentId,
       numbers: result.reserved,
       reservationExpiresAt: result.reservationExpiresAt,
       whishNumber,
-      amount: tombola.pricePerNumber * numbers.length,
+      amount,
       currency: tombola.currency,
     });
   } catch (e) {
