@@ -33,5 +33,32 @@
       "invalidParameter": "يرجى التحقق من بياناتك.",
       "userNotFound": "لا يوجد حساب بهذا الرقم."
     }
+  },
+  "tombola": {
+    "gridView": "شبكة",
+    "listView": "قائمة",
+    "status": "الحالة",
+    "prize": "الجائزة",
+    "price": "سعر الرقم",
+    "grid": "الأرقام",
+    "holder": "محجوز بواسطة",
+    "taken": "محجوز",
+    "numberDetail": "تفاصيل الرقم",
+    "reserveComingSoon": "احجز (قريباً)",
+    "close": "إغلاق",
+    "loading": "جارٍ التحميل…",
+    "loadError": "تعذّر التحميل. حاول مرة أخرى.",
+    "none": "لا توجد يانصيبات بعد.",
+    "state": {
+      "available": "متاح",
+      "reserved": "محجوز",
+      "confirmed": "مُباع",
+      "draft": "مسودة",
+      "upcoming": "قادم",
+      "active": "نشط",
+      "closed": "مغلق",
+      "finished": "منتهٍ",
+      "cancelled": "ملغى"
+    }
   }
 }

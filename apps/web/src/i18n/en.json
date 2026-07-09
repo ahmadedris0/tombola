@@ -33,5 +33,32 @@
       "invalidParameter": "Please check your details.",
       "userNotFound": "No account found for this phone."
     }
+  },
+  "tombola": {
+    "gridView": "Grid",
+    "listView": "List",
+    "status": "Status",
+    "prize": "Prize",
+    "price": "Price/number",
+    "grid": "Numbers",
+    "holder": "Held by",
+    "taken": "Taken",
+    "numberDetail": "Number detail",
+    "reserveComingSoon": "Reserve (coming soon)",
+    "close": "Close",
+    "loading": "Loading…",
+    "loadError": "Could not load. Please try again.",
+    "none": "No tombolas yet.",
+    "state": {
+      "available": "Available",
+      "reserved": "Reserved",
+      "confirmed": "Sold",
+      "draft": "Draft",
+      "upcoming": "Upcoming",
+      "active": "Active",
+      "closed": "Closed",
+      "finished": "Finished",
+      "cancelled": "Cancelled"
+    }
   }
 }
