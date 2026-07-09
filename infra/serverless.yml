@@ -59,8 +59,53 @@ resources:
               Condition:
                 StringEquals:
                   AWS:SourceArn: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${WebDistribution}'
+    AdminOAC:
+      Type: AWS::CloudFront::OriginAccessControl
+      Properties:
+        OriginAccessControlConfig:
+          Name: tombola-admin-oac-${self:provider.stage}
+          OriginAccessControlOriginType: s3
+          SigningBehavior: always
+          SigningProtocol: sigv4
+    AdminDistribution:
+      Type: AWS::CloudFront::Distribution
+      Properties:
+        DistributionConfig:
+          Enabled: true
+          DefaultRootObject: index.html
+          Origins:
+            - Id: admin-s3
+              DomainName: !GetAtt AdminBucket.RegionalDomainName
+              OriginAccessControlId: !GetAtt AdminOAC.Id
+              S3OriginConfig: { OriginAccessIdentity: '' }
+          DefaultCacheBehavior:
+            TargetOriginId: admin-s3
+            ViewerProtocolPolicy: redirect-to-https
+            CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+          CustomErrorResponses:
+            - ErrorCode: 403
+              ResponseCode: 200
+              ResponsePagePath: /index.html
+            - ErrorCode: 404
+              ResponseCode: 200
+              ResponsePagePath: /index.html
+    AdminBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref AdminBucket
+        PolicyDocument:
+          Statement:
+            - Effect: Allow
+              Principal: { Service: cloudfront.amazonaws.com }
+              Action: s3:GetObject
+              Resource: !Sub '${AdminBucket.Arn}/*'
+              Condition:
+                StringEquals:
+                  AWS:SourceArn: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${AdminDistribution}'
   Outputs:
     WebBucketName: { Value: !Ref WebBucket }
     AdminBucketName: { Value: !Ref AdminBucket }
     WebDistributionId: { Value: !Ref WebDistribution }
     WebDistributionDomain: { Value: !GetAtt WebDistribution.DomainName }
+    AdminDistributionId: { Value: !Ref AdminDistribution }
+    AdminDistributionDomain: { Value: !GetAtt AdminDistribution.DomainName }

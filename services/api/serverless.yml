@@ -19,6 +19,7 @@ provider:
     cors:
       allowedOrigins:
         - https://d5udiniaf9iiw.cloudfront.net
+        - https://d7et0zxf5cp05.cloudfront.net
         - http://localhost:5173
       allowedHeaders:
         - Content-Type
