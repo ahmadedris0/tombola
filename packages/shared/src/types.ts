@@ -33,6 +33,7 @@ export interface Tombola {
   drawAt?: string;
   winningNumber?: number;
   winnerUserId?: string;
+  winnerName?: string;
   createdBy: string;
   createdAt: string;
 }

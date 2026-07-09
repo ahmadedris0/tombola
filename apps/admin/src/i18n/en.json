@@ -41,6 +41,10 @@
     "drawAt": "Draws at",
     "save": "Save",
     "cancel": "Cancel",
+    "runDraw": "Run draw",
+    "confirmDraw": "Run the draw now? This cannot be undone.",
+    "drawError": "Draw failed: {{reason}}",
+    "winner": "Winner",
     "state": {
       "draft": "Draft",
       "upcoming": "Upcoming",

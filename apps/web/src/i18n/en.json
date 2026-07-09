@@ -63,6 +63,7 @@
     "loading": "Loading…",
     "loadError": "Could not load. Please try again.",
     "none": "No tombolas yet.",
+    "winnerBanner": "🎉 Winning number",
     "state": {
       "available": "Available",
       "reserved": "Reserved",

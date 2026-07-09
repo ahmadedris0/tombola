@@ -41,6 +41,10 @@
     "drawAt": "السحب في",
     "save": "حفظ",
     "cancel": "إلغاء",
+    "runDraw": "إجراء السحب",
+    "confirmDraw": "إجراء السحب الآن؟ لا يمكن التراجع.",
+    "drawError": "فشل السحب: {{reason}}",
+    "winner": "الفائز",
     "state": {
       "draft": "مسودة",
       "upcoming": "قادم",
