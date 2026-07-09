@@ -13,5 +13,40 @@
       "userNotConfirmed": "يرجى تأكيد رقمك أولاً.",
       "userNotFound": "لا يوجد حساب بهذا الرقم."
     }
+  },
+  "admin": {
+    "tombolas": "اليانصيبات",
+    "newTombola": "يانصيب جديد",
+    "editTombola": "تعديل اليانصيب",
+    "loadError": "تعذّر تحميل اليانصيبات.",
+    "saveError": "تعذّر الحفظ. تحقق من الحقول.",
+    "noTombolas": "لا توجد يانصيبات بعد.",
+    "edit": "تعديل",
+    "duplicate": "نسخ",
+    "delete": "حذف",
+    "confirmDelete": "حذف هذا اليانصيب؟",
+    "titleEn": "العنوان (إنجليزي)",
+    "titleAr": "العنوان (عربي)",
+    "price": "سعر الرقم",
+    "prize": "قيمة الجائزة",
+    "currency": "العملة",
+    "gridSize": "حجم الشبكة",
+    "window": "مدة الحجز (دقيقة)",
+    "drawPool": "مجموعة السحب",
+    "confirmedOnly": "المؤكدة فقط",
+    "fullGrid": "كامل الشبكة",
+    "status": "الحالة",
+    "openAt": "يفتح في",
+    "drawAt": "السحب في",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "state": {
+      "draft": "مسودة",
+      "upcoming": "قادم",
+      "active": "نشط",
+      "closed": "مغلق",
+      "finished": "منتهٍ",
+      "cancelled": "ملغى"
+    }
   }
 }

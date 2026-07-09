@@ -13,5 +13,40 @@
       "userNotConfirmed": "Please verify your phone first.",
       "userNotFound": "No account found for this phone."
     }
+  },
+  "admin": {
+    "tombolas": "Tombolas",
+    "newTombola": "New tombola",
+    "editTombola": "Edit tombola",
+    "loadError": "Could not load tombolas.",
+    "saveError": "Could not save. Check the fields.",
+    "noTombolas": "No tombolas yet.",
+    "edit": "Edit",
+    "duplicate": "Duplicate",
+    "delete": "Delete",
+    "confirmDelete": "Delete this tombola?",
+    "titleEn": "Title (English)",
+    "titleAr": "Title (Arabic)",
+    "price": "Price / number",
+    "prize": "Prize amount",
+    "currency": "Currency",
+    "gridSize": "Grid size",
+    "window": "Reservation window (min)",
+    "drawPool": "Draw pool",
+    "confirmedOnly": "Confirmed only",
+    "fullGrid": "Full grid",
+    "status": "Status",
+    "openAt": "Opens at",
+    "drawAt": "Draws at",
+    "save": "Save",
+    "cancel": "Cancel",
+    "state": {
+      "draft": "Draft",
+      "upcoming": "Upcoming",
+      "active": "Active",
+      "closed": "Closed",
+      "finished": "Finished",
+      "cancelled": "Cancelled"
+    }
   }
 }
