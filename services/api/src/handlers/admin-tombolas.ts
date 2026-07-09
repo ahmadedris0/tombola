@@ -14,7 +14,7 @@ import {
   updateNumberLabel,
 } from '../repository/tombolas';
 
-export const list = async (event: AuthedEvent): Promise<APIGatewayProxyStructuredResultV2> => {
+export const list = async (): Promise<APIGatewayProxyStructuredResultV2> => {
   return json(200, { tombolas: await listAllTombolas() });
 };
 
